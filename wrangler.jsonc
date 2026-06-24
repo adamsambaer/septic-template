@@ -1,0 +1,23 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // ════════════════════════════════════════════════════════════
+  // ⬇️ CHANGE THIS: Your worker name (e.g., "clientname-landing")
+  // ════════════════════════════════════════════════════════════
+  "name": "sample-website",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2025-03-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  }
+  // ════════════════════════════════════════════════════════════
+  // OPTIONAL: Bind a custom domain/subdomain. With Workers Builds
+  // or `wrangler deploy` you can instead attach a route in the
+  // Cloudflare dashboard. Example:
+  //
+  // "routes": [
+  //   { "pattern": "clientname.example.com/*", "zone_id": "<your-zone-id>" }
+  // ]
+  // ════════════════════════════════════════════════════════════
+}
