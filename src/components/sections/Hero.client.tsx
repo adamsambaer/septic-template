@@ -91,7 +91,9 @@ export function HeroView({ content }: { content: HeroContent }) {
               style={{ fontStretch: 'condensed' }}
             >
               {content.headline}
-              <span className="mt-1 block text-primary-500">
+              {/* Second line stays white on purpose: the brand color in the hero
+                  belongs to the phone button alone, so the eye lands there. */}
+              <span className="mt-1 block">
                 {content.headlineAccent}
               </span>
             </h1>
