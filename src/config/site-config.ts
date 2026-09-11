@@ -93,6 +93,10 @@ export const defaults = {
   // ── Emergency strip above the nav ────────────────────────────────────────
   emergency: { enabled: true, label: 'Septic emergency?', ctaText: 'Call now' },
 
+  // ── Text-us chat widget (Sapt: 1 · Site settings → Chat widget) ──────────
+  // Looks like a chat, starts a text conversation. Off hides the launcher.
+  chat: { enabled: true },
+
   // ── Services (Sapt: 3 · Services, one item per page) ─────────────────────
   services: [
     {
@@ -361,6 +365,24 @@ export const defaults = {
   copy: {
     nav: { home: 'Home', services: 'Services', areas: 'Areas We Serve', about: 'About', reviews: 'Reviews', contact: 'Contact', viewAll: 'View all services', call: 'Call' },
     stickyBar: { call: 'Call now', quote: 'Get a quote' },
+    chatWidget: {
+      openLabel: 'Text us',
+      title: 'Let us know if you have any questions',
+      greeting: "This text goes straight to my personal phone. I'll make sure to get back to you the second I'm free.",
+      nameLabel: 'Your name',
+      namePlaceholder: 'First and last name',
+      phoneLabel: 'Mobile number',
+      phonePlaceholder: '(954) 555-0142',
+      messageLabel: 'How can we help?',
+      messagePlaceholder: 'e.g. Toilets are backing up in Davie, can you come today?',
+      consent: 'By sending you agree to receive text messages from us about your request. Message rates may apply. Reply STOP to opt out.',
+      send: 'Send',
+      sending: 'Sending',
+      thanksTitle: 'Thank you!',
+      thanksBody: "Thanks for texting, {name}. I'll text you back at {mobile} as soon as I have a free second.",
+      errorMissing: 'Add your name and a mobile number so we can text you back.',
+      errorSend: "That didn't send. Call {phone} and we'll take it from there.",
+    },
     quoteForm: {
       heading: 'Get a free quote',
       subline: 'Takes 30 seconds. We reply by text, usually within minutes.',

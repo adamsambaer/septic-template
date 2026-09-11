@@ -4,6 +4,7 @@
     "tagline": "Septic pumping, repair & emergency service",
     "theme": "themelgt",
     "emergencyEnabled": true,
+    "chatEnabled": true,
     "emergencyLabel": "Septic emergency?",
     "emergencyCtaText": "Call now",
     "eyebrow": "Your Local Septic Specialists",

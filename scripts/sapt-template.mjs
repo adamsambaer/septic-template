@@ -63,6 +63,12 @@ export const TOKENS = [
   { find: '#C4392C', var: 'accentHex', label: 'Emergency color', example: '#C4392C' },
 ]
 
+/** Declared but not tokenized: these have no demo literal, the workflows already carry the {{placeholder}}. */
+export const EXTRA_VARIABLES = [
+  { name: 'owner_mobile', label: "Owner's mobile (E.164), receives lead alerts", example: '+12395550110', required: false },
+  { name: 'from_number', label: 'Telnyx sending number (E.164)', example: '+12395550199', required: false },
+]
+
 const AGENCY_TYPE_SLUGS = new Set(['client_onboarding'])
 const AGENCY_TAG = 'agency-ops'
 
@@ -118,7 +124,7 @@ async function main() {
         description: 'Septic company site + CRM + text-back automations. Stamped per client with {{variables}}.',
         include: { roles: true, sidebar: true, workflows: true, objectTypes: true, objectRelations: true, crmConfig: true, spineFields: true, contentTypes: true, starterContent: true, branding: true, projectContext: true, agents: true },
         tokenize: TOKENS.map(({ find, var: v }) => ({ find, var: v })),
-        variables: TOKENS.map(({ var: v, label, example, required }) => ({ name: v, label, type: 'string', example, required: Boolean(required) })),
+        variables: [...TOKENS.map(({ var: v, label, example, required }) => ({ name: v, label, type: 'string', example, required: Boolean(required) })), ...EXTRA_VARIABLES.map((x) => ({ ...x, type: 'string' }))],
       }),
     })
     const template = snap.data?.template ?? snap.template

@@ -131,6 +131,7 @@ async function main() {
           companyName: s.companyName, legalName: s.legalName, phone: s.phoneNumber, phoneE164: s.phoneE164,
           email: s.email, siteUrl: config.siteUrl || '', street: s.addressStreet, zip: s.addressZip,
           primaryHex: bundle.branding.colors[0].hex, accentHex: bundle.branding.colors[1].hex,
+          owner_mobile: bundle.ownerMobile || '',
         }
         const r = await api(`/projects/${agency}/templates/${templateId}/apply`, { method: 'POST', body: JSON.stringify({ name: s.companyName, variableValues }) })
         projectId = r.data.project.id

@@ -103,6 +103,7 @@ export function mapCms(input) {
     if (str(s.siteUrl)) out.siteUrl = str(s.siteUrl)
     out.theme = choice(CHOICES.theme, s.theme, 'light')
     out.emergency = { enabled: bool(s.emergencyEnabled), label: str(s.emergencyLabel), ctaText: str(s.emergencyCtaText) }
+    out.chat = { enabled: bool(s.chatEnabled, true) }
     out.eyebrow = str(s.eyebrow)
     out.ctaText = str(s.ctaText)
     out.hero = {

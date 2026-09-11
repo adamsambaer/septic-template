@@ -170,6 +170,7 @@ export function onboardingToBundle(data) {
   return {
     slug: slugify(name),
     settings, photos, copy, services, cities, faqs, steps, reviews, branding,
+    ownerMobile: normalisePhone(d.owner_phone).e164,
     notes,
   }
 }

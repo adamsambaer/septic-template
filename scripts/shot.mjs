@@ -18,11 +18,12 @@ if (!url || !out) {
   console.error('usage: node scripts/shot.mjs <url> <out.png> [--width N] [--height N] [--mobile] [--scroll css] [--hover css] [--full] [--wait ms]')
   process.exit(2)
 }
-const opt = { width: 1440, height: 1000, mobile: false, scroll: '', hover: '', click: '', full: false, wait: 1200 }
+const opt = { width: 1440, height: 1000, mobile: false, scroll: '', hover: '', click: '', eval: '', reload: false, full: false, wait: 1200 }
 for (let i = 0; i < rest.length; i++) {
   const k = rest[i]
   if (k === '--mobile') opt.mobile = true
   else if (k === '--full') opt.full = true
+  else if (k === '--reload') opt.reload = true
   else if (k.startsWith('--')) opt[k.slice(2)] = /^(width|height|wait)$/.test(k.slice(2)) ? Number(rest[++i]) : rest[++i]
 }
 if (opt.mobile) {
@@ -72,6 +73,15 @@ await send('Page.navigate', { url })
 for (let i = 0; i < 100 && !events.includes('Page.loadEventFired'); i++) await sleep(100)
 await sleep(opt.wait)
 
+if (opt.eval) {
+  await evaluate(opt.eval)
+  if (opt.reload) {
+    events.length = 0
+    await send('Page.reload')
+    for (let i = 0; i < 100 && !events.includes('Page.loadEventFired'); i++) await sleep(100)
+    await sleep(opt.wait)
+  }
+}
 if (opt.scroll) {
   await evaluate(`document.querySelector(${JSON.stringify(opt.scroll)})?.scrollIntoView({ block: 'start' })`)
   await sleep(400)

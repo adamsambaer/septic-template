@@ -66,7 +66,7 @@ captures it with the demo company's strings turned into `{{variables}}`.
 | --- | --- | --- |
 | **Branding** (project page) | 1 | Logo, colors named **Primary** and **Emergency**. The site derives every tint and shade from those two. |
 | **Assets** | many | Every photo. Upload here, pick in the fields below. |
-| **1 · Site settings** | 1 | Identity, contact, address, site URL, theme, emergency strip, hero, trust signals, about copy, counties, and **which pages exist**. |
+| **1 · Site settings** | 1 | Identity, contact, address, site URL, theme, emergency strip, text-us chat widget on/off, hero, trust signals, about copy, counties, and **which pages exist**. |
 | **2 · Photos** | 1 | Hero, about, call-band photos and their focal points. Logo fallbacks. |
 | **3 · Services** | one per service | Title, slug, kind, form option, card text, page intro, included list, this service's process steps and FAQ, photo. **Each published item is a page.** |
 | **4 · Cities** | one per city | Name, slug, county. Each published item is a city page plus a coverage-band tile. |
@@ -75,8 +75,9 @@ captures it with the demo company's strings turned into `{{variables}}`.
 | **7 · Reviews** | many | Home, about, reviews page, and one per city page matched on the City field. |
 | **8 · Copy & labels** | 1 | Every other sentence and label, grouped by section and page, including the legal page bodies. Placeholders like `{company}` `{phone}` `{city}` fill automatically. |
 
-CRM: `lead` (the quote form posts here, publicly ingestable), `customer` and
-`job` (the reminder and review workflows run off these).
+CRM: `lead` (the quote form and the chat widget post here, publicly ingestable),
+`customer` and `job` (the reminder and review workflows run off these). Every
+lead texts the owner and texts the visitor back over Telnyx; nothing goes to email.
 
 ## Configuration
 

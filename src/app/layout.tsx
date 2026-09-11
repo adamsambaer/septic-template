@@ -1,5 +1,5 @@
 import { Analytics } from '@/components/Analytics'
-import { ScrollToTop, StickyCTA } from '@/components/ui'
+import { ChatWidget, ScrollToTop, StickyCTA } from '@/components/ui'
 import { siteConfig } from '@/config/site-config'
 import { t } from '@/lib/copy'
 import type { Metadata, Viewport } from 'next'
@@ -85,6 +85,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ScrollToTop />
         {children}
         <StickyCTA />
+        <ChatWidget />
         <Analytics />
       </body>
     </html>
