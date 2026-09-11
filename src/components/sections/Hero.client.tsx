@@ -1,47 +1,9 @@
 'use client'
 
+import { QuoteForm } from '@/components/QuoteForm'
 import { siteConfig } from '@/config/site-config'
-import { cn } from '@/lib/utils'
-import { ArrowRight, CheckCircle } from 'lucide-react'
-import Link from 'next/link'
-import { useEffect, useRef } from 'react'
-
-function ScrollReveal({ children, className, delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
-  const ref = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const element = ref.current
-    if (!element) return
-
-    if (window.innerWidth < 768) {
-      element.classList.add('animate-visible')
-      return
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          element.classList.add('animate-visible')
-          observer.disconnect()
-        }
-      },
-      { threshold: 0.1, rootMargin: '50px' }
-    )
-
-    observer.observe(element)
-    return () => observer.disconnect()
-  }, [])
-
-  return (
-    <div
-      ref={ref}
-      className={cn('animate-fade-up', className)}
-      style={{ animationDelay: `${delay}s` }}
-    >
-      {children}
-    </div>
-  )
-}
+import { ArrowRight, Check, Phone } from 'lucide-react'
+import type { CSSProperties } from 'react'
 
 export interface HeroContent {
   headline: string
@@ -50,77 +12,127 @@ export interface HeroContent {
   trustPoints: string[]
 }
 
+/**
+ * Hero — dark, photo-led, form-forward.
+ *
+ * Structure follows the contractor-site convention: full-bleed job photo,
+ * heavy uppercase headline with one accented line, two pill CTAs, and the
+ * estimate form floating over the photo on the right.
+ *
+ * The photo is doing most of the work. Until siteConfig.photos.hero is set, a
+ * dark layered gradient stands in so the layout and contrast still read.
+ *
+ * Phones get a different treatment. Stretching a 2:1 job-site photo over a
+ * 1300px-tall portrait hero leaves a 15%-wide sliver of the image on screen,
+ * which on a pump truck is a chrome blob. So below lg the photo is confined
+ * to a fixed-height band at the top, framed with `photos.heroFocal.mobile`,
+ * and fades into the solid dark base that the trust points and form sit on.
+ */
 export function HeroView({ content }: { content: HeroContent }) {
+  const { phoneNumber, phoneHref, eyebrow, photos, dark } = siteConfig
+
   return (
-    <section className="relative min-h-screen flex items-center pt-20 overflow-hidden">
-      {/* Background decorations (hidden on mobile for performance) */}
-      <div className="hidden md:block absolute inset-0 pointer-events-none">
-        <div className="absolute -top-20 -right-20 w-[500px] h-[600px] bg-primary-200/20 blur-[80px] rounded-full" />
-        <div className="absolute -bottom-40 -left-20 w-[400px] h-[400px] bg-accent-200/15 blur-[60px] rounded-full" />
+    <section className="relative isolate overflow-hidden">
+      {/* ── Background ── */}
+      <div aria-hidden="true" className="absolute inset-0 -z-10" style={{ backgroundColor: dark.base }}>
+        {/* Photo band: fixed height on phones, full bleed from lg up. */}
+        <div className="absolute inset-x-0 top-0 h-[600px] lg:h-full">
+          {photos.hero ? (
+            <img
+              src={photos.hero}
+              alt=""
+              style={
+                {
+                  '--focal-m': photos.heroFocal.mobile,
+                  '--focal-d': photos.heroFocal.desktop,
+                } as CSSProperties
+              }
+              className="h-full w-full object-cover [object-position:var(--focal-m)] lg:[object-position:var(--focal-d)]"
+            />
+          ) : (
+            <div
+              className="h-full w-full"
+              style={{
+                background: `
+                  radial-gradient(120% 90% at 78% 15%, ${dark.raised} 0%, transparent 60%),
+                  radial-gradient(90% 70% at 10% 90%, #2A2E35 0%, transparent 55%),
+                  linear-gradient(180deg, ${dark.base} 0%, #0E1013 100%)
+                `,
+              }}
+            />
+          )}
+          {/* Scrims keep the headline readable over any photo the client sends.
+              Phones: top-to-bottom, dark under the headline, clearer through
+              the middle, then a fade into the solid base below the band.
+              Desktop: left-to-right so the copy side is dark and the truck
+              side stays visible. */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/35 to-black/50 lg:hidden" />
+          <div
+            className="absolute inset-x-0 bottom-0 h-56 lg:hidden"
+            style={{ background: `linear-gradient(to bottom, transparent, ${dark.base})` }}
+          />
+          <div className="absolute inset-0 hidden bg-gradient-to-r from-black/85 via-black/55 to-black/20 lg:block" />
+          <div className="absolute inset-0 hidden bg-gradient-to-t from-black/60 via-transparent to-black/45 lg:block" />
+        </div>
       </div>
 
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Content */}
-          <div className="text-center lg:text-left">
-            <ScrollReveal>
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-text leading-tight">
-                {content.headline}
-                <span className="block text-primary-500">{content.headlineAccent}</span>
-              </h1>
-            </ScrollReveal>
+      <div className="mx-auto max-w-7xl px-4 pb-16 pt-40 sm:px-6 lg:px-8 lg:pb-24 lg:pt-48">
+        <div className="grid items-start gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16">
+          {/* ── Left: the pitch ── */}
+          <div>
+            <div className="flex items-center gap-2.5">
+              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-white/70">
+                {eyebrow}
+              </span>
+            </div>
 
-            <ScrollReveal delay={0.1}>
-              <p className="mt-6 text-lg sm:text-xl text-text-muted max-w-2xl mx-auto lg:mx-0">
-                {content.subheadline}
-              </p>
-            </ScrollReveal>
+            <h1
+              className="mt-6 text-[2.6rem] font-extrabold uppercase leading-[0.95] tracking-tight text-white text-balance sm:text-6xl lg:text-[4.25rem]"
+              style={{ fontStretch: 'condensed' }}
+            >
+              {content.headline}
+              <span className="mt-1 block text-primary-500">
+                {content.headlineAccent}
+              </span>
+            </h1>
 
-            <ScrollReveal delay={0.2}>
-              <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <Link
-                  href="/book"
-                  className="btn-primary inline-flex items-center justify-center gap-2 py-4 px-8 rounded-full text-lg"
-                >
-                  {siteConfig.ctaText}
-                  <ArrowRight className="h-5 w-5" />
-                </Link>
-                <Link
-                  href="#services"
-                  className="btn-secondary inline-flex items-center justify-center py-4 px-8 rounded-full text-lg"
-                >
-                  {siteConfig.secondaryCtaText}
-                </Link>
-              </div>
-            </ScrollReveal>
+            <p className="mt-6 max-w-lg text-lg leading-relaxed text-white/75">
+              {content.subheadline}
+            </p>
 
-            <ScrollReveal delay={0.3}>
-              <div className="mt-10 flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-3">
-                {content.trustPoints.map((point) => (
-                  <div key={point} className="flex items-center gap-2 text-text-muted">
-                    <CheckCircle className="h-5 w-5 text-green-500" />
-                    <span className="text-sm font-medium">{point}</span>
-                  </div>
-                ))}
-              </div>
-            </ScrollReveal>
+            {/* Phone is the primary action. The person with a backup wants to
+                dial, not fill a form. The form stays alongside for the planner. */}
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <a
+                href={phoneHref}
+                className="inline-flex items-center justify-center gap-3 bg-primary-500 px-8 py-4 text-sm font-extrabold uppercase tracking-[0.14em] text-white transition-colors hover:bg-primary-600"
+              >
+                <Phone className="h-4 w-4" />
+                {phoneNumber}
+              </a>
+              <a
+                href="#quote"
+                className="inline-flex items-center justify-center gap-2 border-2 border-white/30 px-8 py-4 text-sm font-extrabold uppercase tracking-[0.14em] text-white transition-colors hover:bg-white hover:text-neutral-900"
+              >
+                {siteConfig.ctaText}
+                <ArrowRight className="h-4 w-4" />
+              </a>
+            </div>
+
+            <ul className="mt-12 grid max-w-lg gap-x-8 gap-y-3 sm:grid-cols-2">
+              {content.trustPoints.map((point) => (
+                <li key={point} className="flex items-start gap-2.5">
+                  <Check aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-primary-500" strokeWidth={3} />
+                  <span className="text-sm font-medium text-white/85">{point}</span>
+                </li>
+              ))}
+            </ul>
           </div>
 
-          {/* Visual placeholder */}
-          <ScrollReveal delay={0.2} className="hidden lg:block">
-            <div className="relative aspect-square max-w-lg mx-auto">
-              {/* ⬇️ CHANGE THIS: Replace with actual image */}
-              <div className="absolute inset-0 bg-gradient-to-br from-primary-100 to-primary-200 rounded-3xl flex items-center justify-center">
-                <div className="text-center p-8">
-                  <div className="w-24 h-24 bg-primary-500/20 rounded-full mx-auto mb-4 flex items-center justify-center">
-                    <span className="text-4xl">📸</span>
-                  </div>
-                  <p className="text-primary-700 font-medium">Hero Image</p>
-                  <p className="text-primary-600 text-sm mt-1">Replace with client photo</p>
-                </div>
-              </div>
-            </div>
-          </ScrollReveal>
+          {/* ── Right: the estimate card ── */}
+          <div id="quote" className="lg:-mt-4">
+            <QuoteForm className="shadow-2xl shadow-black/40" />
+          </div>
         </div>
       </div>
     </section>

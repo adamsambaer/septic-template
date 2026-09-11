@@ -1,0 +1,7 @@
+# Worker secrets, prompted for by Cloudflare's Deploy Button. Optional.
+#
+# SAPT_API_KEY lets the build pull the client's Sapt project (CMS, Branding,
+# Assets) into the site at build time. Without it the site builds from the
+# snapshot committed in the repo, which `pnpm pull` and the sync workflow keep
+# current. Never prefix it with NEXT_PUBLIC_ and never commit a real key.
+SAPT_API_KEY=

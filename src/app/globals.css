@@ -94,21 +94,6 @@
   }
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Booking page fade-in animation */
-.animate-fadeIn {
-  animation: fadeIn 0.4s ease-out forwards;
-}
 
 /* ════════════════════════════════════════════════════════════════════════════
    BASE STYLES
@@ -306,4 +291,48 @@ textarea:focus-visible {
   display: none !important;
   width: 0 !important;
   height: 0 !important;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   LEGAL / LONG-FORM PROSE (privacy, terms)
+   ════════════════════════════════════════════════════════════════════════════ */
+.prose-septic h2 {
+  margin-top: 2.25rem;
+  margin-bottom: 0.6rem;
+  font-size: 1.05rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--color-text);
+  border-left: 4px solid var(--color-primary-500);
+  padding-left: 0.75rem;
+}
+.prose-septic p,
+.prose-septic li {
+  color: var(--color-text-muted);
+  line-height: 1.7;
+}
+.prose-septic p { margin-bottom: 1rem; }
+.prose-septic ul { list-style: square; padding-left: 1.25rem; margin-bottom: 1rem; }
+.prose-septic li { margin-bottom: 0.4rem; }
+.prose-septic li::marker { color: var(--color-primary-500); }
+
+
+/* ════════════════════════════════════════════════════════════════════════════
+   QUALITY FLOOR — focus + reduced motion for the square control set
+   ════════════════════════════════════════════════════════════════════════════ */
+a:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible {
+  outline: 3px solid var(--color-primary-500);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }

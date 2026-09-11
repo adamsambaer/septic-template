@@ -1,23 +1,27 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  // ════════════════════════════════════════════════════════════
-  // ⬇️ CHANGE THIS: Your worker name (e.g., "clientname-landing")
-  // ════════════════════════════════════════════════════════════
-  "name": "sample-website",
+  // Worker name. `pnpm init-project` stamps a per-client name ("{slug}-site");
+  // the Deploy to Cloudflare button uses this value as the default.
+  "name": "septic-template",
   "main": ".open-next/worker.js",
-  "compatibility_date": "2025-03-01",
+  "compatibility_date": "2026-08-01",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  // Deploy Buttons read package.json's `build` and `deploy` scripts. This hook
+  // also makes Cloudflare's fallback `npx wrangler deploy` safe: the OpenNext
+  // Worker is generated (after the CMS snapshot step) before Wrangler reads
+  // the entry point.
+  "build": {
+    "command": "pnpm build && pnpm exec opennextjs-cloudflare build"
+  },
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": true
   }
-  // ════════════════════════════════════════════════════════════
-  // OPTIONAL: Bind a custom domain/subdomain. With Workers Builds
-  // or `wrangler deploy` you can instead attach a route in the
-  // Cloudflare dashboard. Example:
-  //
-  // "routes": [
-  //   { "pattern": "clientname.example.com/*", "zone_id": "<your-zone-id>" }
-  // ]
-  // ════════════════════════════════════════════════════════════
+  // Custom domain: attach a route in the Cloudflare dashboard, or set
+  // ROUTE_PATTERN + ROUTE_ZONE_ID when running `pnpm init-project`, which
+  // writes:
+  // "routes": [{ "pattern": "www.clientdomain.com/*", "zone_id": "<zone id>" }]
 }

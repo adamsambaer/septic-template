@@ -1,132 +1,86 @@
 'use client'
 
 import { siteConfig } from '@/config/site-config'
-import { cn } from '@/lib/utils'
-import { ArrowRight, CheckCircle, Phone } from 'lucide-react'
+import { ArrowRight, Clock, Phone } from 'lucide-react'
 import Link from 'next/link'
-import { useEffect, useRef } from 'react'
 
-const CTA_TITLE = 'Ready to Get Started?'
-const CTA_ACCENT = 'Book Your Free Consultation'
-const CTA_DESCRIPTION = 'Take the first step today. Our team is ready to help you achieve your goals with personalized solutions.'
-
-const BENEFITS = [
-  'Free initial consultation',
-  'Same-week appointments',
-  'Flexible payment options',
-]
-
-function ScrollReveal({ children, className, delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
-  const ref = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const element = ref.current
-    if (!element) return
-
-    if (window.innerWidth < 768) {
-      element.classList.add('animate-visible')
-      return
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          element.classList.add('animate-visible')
-          observer.disconnect()
-        }
-      },
-      { threshold: 0.1, rootMargin: '50px' }
-    )
-
-    observer.observe(element)
-    return () => observer.disconnect()
-  }, [])
-
-  return (
-    <div
-      ref={ref}
-      className={cn('animate-fade-up', className)}
-      style={{ animationDelay: `${delay}s` }}
-    >
-      {children}
-    </div>
-  )
-}
-
+/**
+ * Closing call band.
+ *
+ * Split block: job photo on one side, dark panel with the phone number on the
+ * other. Square edges, no rounding, no gradients beyond the photo scrim.
+ *
+ * The phone number is the primary action here, not the form. Someone who has
+ * scrolled this far and still hasn't filled anything in is usually the person
+ * who would rather just talk to somebody.
+ */
 export function CTA() {
+  const { photos, phoneNumber, phoneHref, companyName, serviceArea, trust, dark, pages, copy } = siteConfig
+  const c = copy.ctaBand
+
   return (
-    <section id="contact" className="relative py-24 lg:py-32 overflow-hidden">
-      {/* Section divider */}
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+    <section id="contact" className="bg-bg py-20 lg:py-28">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid overflow-hidden border-2 border-text lg:grid-cols-2">
+          {/* Photo */}
+          <div className="relative min-h-[280px] lg:min-h-[440px]">
+            {photos.cta ? (
+              <img
+                src={photos.cta}
+                alt={`Speak to the team at ${companyName}`}
+                className="absolute inset-0 h-full w-full object-cover"
+                style={{ objectPosition: photos.ctaFocal || 'center' }}
+              />
+            ) : (
+              <div className="absolute inset-0 bg-neutral-800" />
+            )}
+            {trust.emergencyAvailable && c.badge && (
+              <span className="absolute left-0 top-6 inline-flex items-center gap-2 bg-accent-500 px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.14em] text-white">
+                <Clock className="h-3.5 w-3.5" />
+                {c.badge}
+              </span>
+            )}
+          </div>
 
-      {/* Background accents (desktop only) */}
-      <div className="hidden md:block absolute -left-20 top-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-primary-400/10 rounded-full blur-[80px]" />
-      <div className="hidden md:block absolute -right-20 bottom-0 w-[250px] h-[250px] bg-accent-400/8 rounded-full blur-[60px]" />
+          {/* Panel */}
+          <div className="flex flex-col justify-center p-8 sm:p-12" style={{ backgroundColor: dark.base }}>
+            {c.eyebrow && (
+              <span className="text-xs font-bold uppercase tracking-[0.2em] text-white/60">{c.eyebrow}</span>
+            )}
 
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Content */}
-          <ScrollReveal>
-            <div>
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-text mb-6">
-                {CTA_TITLE}
-                <span className="block text-primary-500">{CTA_ACCENT}</span>
-              </h2>
-              <p className="text-xl text-text-muted mb-8 leading-relaxed">
-                {CTA_DESCRIPTION}
+            <h2 className="mt-5 text-3xl font-extrabold uppercase leading-[0.98] tracking-tight text-white sm:text-4xl">
+              {c.title} <span className="text-primary-500">{c.accent}</span>
+            </h2>
+
+            {c.body && <p className="mt-4 max-w-md leading-relaxed text-white/70">{c.body}</p>}
+
+            <a
+              href={phoneHref}
+              className="mt-8 inline-flex items-center gap-4 bg-primary-500 px-6 py-5 transition-colors hover:bg-primary-600"
+            >
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center bg-white/15">
+                <Phone className="h-5 w-5 text-white" />
+              </span>
+              <span className="text-left">
+                <span className="block text-[11px] font-bold uppercase tracking-[0.16em] text-white/80">{c.callLabel}</span>
+                <span className="block text-2xl font-extrabold leading-tight text-white">{phoneNumber}</span>
+              </span>
+            </a>
+
+            <Link
+              href={pages.contact ? '/contact' : '/#quote'}
+              className="mt-3 inline-flex items-center justify-center gap-2 border-2 border-white/25 px-6 py-4 text-sm font-extrabold uppercase tracking-[0.14em] text-white transition-colors hover:bg-white hover:text-neutral-900"
+            >
+              {c.quoteLabel}
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+
+            {serviceArea.counties.length > 0 && (
+              <p className="mt-6 border-t border-white/15 pt-5 text-xs uppercase tracking-wider text-white/45">
+                {c.serving} {serviceArea.counties.join(' · ')}
               </p>
-
-              <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                <Link
-                  href="/book"
-                  className="btn-primary inline-flex items-center justify-center gap-3 text-lg py-4 px-8 rounded-full"
-                >
-                  Book Online
-                  <ArrowRight className="h-5 w-5" />
-                </Link>
-                <a
-                  href={siteConfig.phoneHref}
-                  className="inline-flex items-center justify-center gap-2 text-text-muted font-medium hover:text-primary-500 transition-colors"
-                >
-                  <Phone className="h-5 w-5" />
-                  or call {siteConfig.phoneNumber}
-                </a>
-              </div>
-
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4 text-text-muted text-sm">
-                {BENEFITS.map((benefit, index) => (
-                  <div key={benefit} className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span>{benefit}</span>
-                    {index < BENEFITS.length - 1 && (
-                      <div className="hidden sm:block w-1 h-1 bg-text-light rounded-full ml-2" />
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </ScrollReveal>
-
-          {/* Visual placeholder */}
-          <ScrollReveal delay={0.2}>
-            <div className="relative aspect-[4/3] max-w-sm lg:max-w-lg mx-auto">
-              {/* ⬇️ CHANGE THIS: Replace with actual image */}
-              <div
-                className="absolute inset-0 bg-gradient-to-br from-primary-100 to-accent-100 overflow-hidden shadow-xl flex items-center justify-center"
-                style={{
-                  borderRadius: '45% 55% 40% 60% / 50% 45% 55% 50%',
-                }}
-              >
-                <div className="text-center p-8">
-                  <div className="w-24 h-24 bg-primary-500/20 rounded-full mx-auto mb-4 flex items-center justify-center">
-                    <span className="text-4xl">📞</span>
-                  </div>
-                  <p className="text-primary-700 font-medium">Contact Image</p>
-                  <p className="text-primary-600 text-sm mt-1">Office or team photo</p>
-                </div>
-              </div>
-            </div>
-          </ScrollReveal>
+            )}
+          </div>
         </div>
       </div>
     </section>

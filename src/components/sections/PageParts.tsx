@@ -1,0 +1,406 @@
+'use client'
+
+import { QuoteForm } from '@/components/QuoteForm'
+import { siteConfig } from '@/config/site-config'
+import { t } from '@/lib/copy'
+import { cn } from '@/lib/utils'
+import { ArrowUpRight, ChevronRight, MapPin, Minus, Plus, Quote, Star } from 'lucide-react'
+import { useState } from 'react'
+import Link from 'next/link'
+
+/**
+ * Shared building blocks for every inner page.
+ *
+ * Kept in one file because they are always used together and each is small.
+ * Square edges and heavy rules throughout to match the home page. Every label
+ * comes from siteConfig.copy so a client can rename anything in Sapt.
+ */
+
+/* ── Breadcrumb ─────────────────────────────────────────────────────────── */
+
+export function Breadcrumbs({ trail }: { trail: { label: string; href?: string }[] }) {
+  return (
+    <nav aria-label="Breadcrumb" className="mb-6">
+      <ol className="flex flex-wrap items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-white/55">
+        {trail.map((c, i) => (
+          <li key={c.label} className="flex items-center gap-1.5">
+            {i > 0 && <ChevronRight className="h-3 w-3" />}
+            {c.href ? (
+              <Link href={c.href} className="transition-colors hover:text-white">{c.label}</Link>
+            ) : (
+              <span className="text-white">{c.label}</span>
+            )}
+          </li>
+        ))}
+      </ol>
+    </nav>
+  )
+}
+
+/* ── Inner page hero ────────────────────────────────────────────────────── */
+
+export function PageHero({
+  eyebrow,
+  title,
+  intro,
+  image,
+  focal,
+  trail,
+  withForm = true,
+  formService,
+}: {
+  eyebrow?: string
+  title: string
+  intro?: string
+  image?: string
+  focal?: string
+  trail: { label: string; href?: string }[]
+  withForm?: boolean
+  formService?: string
+}) {
+  const { dark } = siteConfig
+
+  return (
+    <section className="relative isolate overflow-hidden">
+      <div aria-hidden="true" className="absolute inset-0 -z-10">
+        {image ? (
+          <img src={image} alt="" style={{ objectPosition: focal || 'center' }} className="h-full w-full object-cover" />
+        ) : (
+          <div className="h-full w-full" style={{ backgroundColor: dark.base }} />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/40" />
+      </div>
+
+      <div className="mx-auto max-w-7xl px-4 pb-14 pt-40 sm:px-6 lg:px-8 lg:pb-20 lg:pt-48">
+        <div className={cn('grid gap-10', withForm ? 'lg:grid-cols-[1.1fr_0.9fr] lg:gap-14' : 'max-w-3xl')}>
+          <div>
+            <Breadcrumbs trail={trail} />
+
+            {eyebrow && (
+              <div className="mb-4">
+                <span className="text-xs font-bold uppercase tracking-[0.2em] text-white/70">{eyebrow}</span>
+              </div>
+            )}
+
+            <h1 className="text-3xl font-extrabold uppercase leading-[0.98] tracking-tight text-white text-balance sm:text-4xl lg:text-5xl">
+              {title}
+            </h1>
+
+            {intro && <p className="mt-5 max-w-xl text-lg leading-relaxed text-white/75">{intro}</p>}
+          </div>
+
+          {withForm && <QuoteForm className="shadow-2xl shadow-black/40" defaultService={formService} />}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* ── Section heading ────────────────────────────────────────────────────── */
+
+export function SectionHead({
+  eyebrow,
+  title,
+  accent,
+  intro,
+  dark = false,
+}: {
+  eyebrow?: string
+  title: string
+  accent?: string
+  intro?: string
+  dark?: boolean
+}) {
+  return (
+    <div className={cn('border-b-2 pb-8', dark ? 'border-white/20' : 'border-text')}>
+      {eyebrow && (
+        <span className={cn('text-xs font-bold uppercase tracking-[0.2em]', dark ? 'text-white/60' : 'text-text-muted')}>
+          {eyebrow}
+        </span>
+      )}
+      <h2
+        className={cn(
+          'mt-4 max-w-3xl text-3xl font-extrabold uppercase leading-[0.98] tracking-tight sm:text-4xl',
+          dark ? 'text-white' : 'text-text'
+        )}
+      >
+        {title} {accent && <span className="text-primary-500">{accent}</span>}
+      </h2>
+      {intro && (
+        <p className={cn('mt-4 max-w-2xl leading-relaxed', dark ? 'text-white/70' : 'text-text-muted')}>{intro}</p>
+      )}
+    </div>
+  )
+}
+
+/* ── Process track ──────────────────────────────────────────────────────── */
+
+export function ProcessSteps({
+  steps = siteConfig.process,
+  intro,
+}: {
+  /** Service pages pass their own steps; the fallback is the general set. */
+  steps?: { title: string; body: string }[]
+  intro?: string
+}) {
+  const c = siteConfig.copy.process
+  if (steps.length === 0) return null
+
+  return (
+    <section className="bg-surface py-20 lg:py-28">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <SectionHead eyebrow={c.eyebrow} title={c.title} accent={t(c.accent, { n: steps.length })} intro={intro ?? c.intro} />
+
+        {/*
+          A numbered track. Vertical on mobile with the line down the left,
+          horizontal on desktop with the line across the top. The nodes sit on
+          the line so the eye reads it as a sequence, not a row of cards.
+        */}
+        <ol className="relative mt-14 grid gap-10 lg:grid-cols-5 lg:gap-6">
+          <div
+            aria-hidden="true"
+            className="absolute left-[23px] top-0 h-full w-0.5 bg-border lg:left-0 lg:top-[23px] lg:h-0.5 lg:w-full"
+          />
+
+          {steps.map((step, i) => {
+            const last = i === steps.length - 1
+            return (
+              <li key={step.title} className="relative pl-16 lg:pl-0 lg:pt-16">
+                <span
+                  className={cn(
+                    'absolute left-0 top-0 flex h-12 w-12 items-center justify-center text-base font-extrabold tabular-nums text-white',
+                    last ? 'bg-text' : 'bg-primary-500'
+                  )}
+                >
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <h3 className="text-base font-extrabold uppercase leading-tight tracking-tight text-text">{step.title}</h3>
+                <p className="mt-2.5 text-sm leading-relaxed text-text-muted">{step.body}</p>
+              </li>
+            )
+          })}
+        </ol>
+      </div>
+    </section>
+  )
+}
+
+/* ── FAQ accordion ──────────────────────────────────────────────────────── */
+
+export function Faq({
+  heading,
+  items = siteConfig.faqs,
+}: {
+  heading?: string
+  /** Service pages pass their own questions; the fallback is the general set. */
+  items?: { q: string; a: string }[]
+}) {
+  const c = siteConfig.copy.faq
+  const [open, setOpen] = useState<number | null>(0)
+  if (items.length === 0) return null
+
+  return (
+    <section className="bg-bg py-20 lg:py-28">
+      <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        <SectionHead eyebrow={c.eyebrow} title={heading ?? c.heading} />
+        <dl className="mt-8 border-t-2 border-border-light">
+          {items.map((f, i) => (
+            <div key={f.q} className="border-b-2 border-border-light">
+              <dt>
+                <button
+                  type="button"
+                  onClick={() => setOpen(open === i ? null : i)}
+                  aria-expanded={open === i}
+                  className="flex w-full items-center justify-between gap-6 py-5 text-left"
+                >
+                  <span className="text-base font-bold text-text sm:text-lg">{f.q}</span>
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center bg-primary-500">
+                    {open === i ? (
+                      <Minus className="h-4 w-4 text-white" strokeWidth={3} />
+                    ) : (
+                      <Plus className="h-4 w-4 text-white" strokeWidth={3} />
+                    )}
+                  </span>
+                </button>
+              </dt>
+              {open === i && <dd className="pb-6 pr-14 text-sm leading-relaxed text-text-muted">{f.a}</dd>}
+            </div>
+          ))}
+        </dl>
+      </div>
+    </section>
+  )
+}
+
+/* ── Reviews ────────────────────────────────────────────────────────────── */
+
+/** The brand-colored rating block. The number is the proof, so it gets its own tile. */
+function RatingTile() {
+  const { trust, copy } = siteConfig
+  return (
+    <div className="flex flex-col justify-between bg-primary-500 p-7 text-white">
+      <Quote className="h-8 w-8 fill-white/20 text-white/20" />
+      <div>
+        <span className="block text-6xl font-extrabold leading-none tabular-nums">{trust.googleRating}</span>
+        <div className="mt-3 flex gap-0.5">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Star key={i} className="h-4 w-4 fill-white text-white" />
+          ))}
+        </div>
+        <span className="mt-3 block text-xs font-bold uppercase tracking-[0.16em] text-white/85">
+          {trust.googleReviewCount} {copy.reviewsSection.googleReviews}
+        </span>
+        {trust.googleReviewUrl && (
+          <a
+            href={trust.googleReviewUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-5 inline-flex items-center gap-1.5 border-b-2 border-white/60 pb-0.5 text-xs font-extrabold uppercase tracking-[0.14em] hover:border-white"
+          >
+            {copy.reviewsSection.readAll}
+            <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={2.5} />
+          </a>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function ReviewCard({ review, large = false }: { review: (typeof siteConfig.reviews)[number]; large?: boolean }) {
+  return (
+    <figure className={cn('relative flex flex-col border-2 border-border-light', large ? 'justify-between bg-bg p-8 sm:p-10' : 'bg-surface p-7')}>
+      <Quote aria-hidden="true" className={cn('absolute fill-primary-100 text-primary-100', large ? 'right-6 top-6 h-12 w-12' : 'right-5 top-5 h-10 w-10')} />
+      <div>
+        <div className="flex gap-0.5">
+          {Array.from({ length: review.rating }).map((_, i) => (
+            <Star key={i} className="h-4 w-4 fill-primary-500 text-primary-500" />
+          ))}
+        </div>
+        <blockquote className={cn('leading-relaxed text-text', large ? 'mt-5 max-w-3xl text-lg sm:text-xl' : 'mt-4 flex-1 text-sm')}>
+          {review.text}
+        </blockquote>
+      </div>
+      <figcaption className={cn('border-t-2 border-border-light', large ? 'mt-8 pt-5' : 'mt-5 pt-4')}>
+        <span className="block text-sm font-extrabold uppercase tracking-tight text-text">{review.name}</span>
+        <span className="mt-0.5 block text-xs text-text-muted">
+          {review.service} · {review.city}
+        </span>
+      </figcaption>
+    </figure>
+  )
+}
+
+export function Reviews({ compact = false }: { compact?: boolean }) {
+  const { reviews, trust, copy } = siteConfig
+  const c = copy.reviewsSection
+  if (reviews.length === 0 && trust.googleReviewCount === 0) return null
+
+  return (
+    <section id="reviews" className="bg-bg py-20 lg:py-28">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <SectionHead eyebrow={c.eyebrow} title={c.title} accent={c.accent} intro={trust.googleReviewCount > 0 ? t(c.rated) : undefined} />
+        <div className={cn('mt-10 grid gap-4', compact ? 'sm:grid-cols-3' : 'sm:grid-cols-2 lg:grid-cols-4')}>
+          {!compact && trust.googleReviewCount > 0 && <RatingTile />}
+          {reviews.map((r) => (
+            <ReviewCard key={`${r.name}-${r.city}`} review={r} />
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/**
+ * One review for a city page.
+ *
+ * Ten city pages carrying the same three quotes reads as boilerplate, to a
+ * visitor and to Google. One quote that names the city reads as local. Uses
+ * the review from that city when there is one, the first review otherwise,
+ * and renders nothing when there are no reviews at all.
+ */
+export function LocalReview({ city }: { city: string }) {
+  const { reviews, trust, copy } = siteConfig
+  const c = copy.reviewsSection
+  const review = reviews.find((r) => r.city === city) ?? reviews[0]
+  if (!review) return null
+  const isLocal = review.city === city
+
+  return (
+    <section className="bg-surface py-20 lg:py-28">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <SectionHead eyebrow={c.eyebrow} title={isLocal ? c.localTitle : c.title} accent={isLocal ? city : c.accent} />
+        <div className="mt-10 grid gap-4 lg:grid-cols-[0.3fr_0.7fr]">
+          {trust.googleReviewCount > 0 && <RatingTile />}
+          <ReviewCard review={review} large />
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* ── Coverage band ──────────────────────────────────────────────────────── */
+
+export function CoverageBand() {
+  const { serviceArea, photos, dark, pages, copy } = siteConfig
+  const c = copy.coverage
+  if (!pages.serviceAreas || serviceArea.cities.length === 0) return null
+
+  return (
+    <section id="areas" className="relative isolate overflow-hidden text-white" style={{ backgroundColor: dark.base }}>
+      {/* Photo bleeds in from the right and fades into the dark ground. */}
+      {photos.hero && (
+        <div aria-hidden="true" className="absolute inset-y-0 right-0 -z-10 hidden w-[55%] lg:block">
+          <img src={photos.hero} alt="" className="h-full w-full object-cover" style={{ objectPosition: photos.coverageFocal || 'center' }} />
+          <div
+            className="absolute inset-0"
+            style={{
+              background: `linear-gradient(90deg, ${dark.base} 0%, ${dark.base}E6 35%, ${dark.base}66 70%, ${dark.base}33 100%)`,
+            }}
+          />
+        </div>
+      )}
+
+      <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-28">
+        <div className="lg:max-w-[62%]">
+          {c.eyebrow && <span className="text-xs font-bold uppercase tracking-[0.2em] text-white/60">{c.eyebrow}</span>}
+          <h2 className="mt-4 text-3xl font-extrabold uppercase leading-[0.98] tracking-tight sm:text-4xl lg:text-5xl">
+            {c.title}{' '}
+            <span className="text-primary-500">
+              {serviceArea.counties.map((x) => x.replace(/ County$/, '')).join(' & ')}
+            </span>
+          </h2>
+          {c.intro && (
+            <p className="mt-4 max-w-xl leading-relaxed text-white/70">
+              {t(c.intro, { count: serviceArea.cities.length })}
+            </p>
+          )}
+
+          <ul className="mt-10 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {serviceArea.cities.map((city) => (
+              <li key={city.slug}>
+                <Link
+                  href={`/service-areas/${city.slug}`}
+                  className="group flex items-center justify-between border border-white/15 bg-white/[0.04] px-4 py-3.5 transition-colors hover:border-primary-500 hover:bg-primary-500"
+                >
+                  <span className="flex items-center gap-2 text-sm font-extrabold uppercase tracking-tight">
+                    <MapPin className="h-3.5 w-3.5 text-primary-500 group-hover:text-white" />
+                    {city.name}
+                  </span>
+                  <ArrowUpRight className="h-4 w-4 text-white/40 group-hover:text-white" strokeWidth={2.5} />
+                </Link>
+              </li>
+            ))}
+          </ul>
+
+          <Link
+            href="/service-areas"
+            className="mt-8 inline-flex items-center gap-2 bg-primary-500 px-6 py-4 text-xs font-extrabold uppercase tracking-[0.14em] text-white transition-colors hover:bg-primary-600"
+          >
+            {c.allAreas}
+            <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={2.5} />
+          </Link>
+        </div>
+      </div>
+    </section>
+  )
+}

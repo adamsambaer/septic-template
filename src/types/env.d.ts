@@ -14,6 +14,5 @@ declare namespace NodeJS {
 
     // Optional server-only secrets.
     SAPT_API_KEY?: string
-    SAPT_BOOKING_TYPE_SLUG?: string
   }
 }

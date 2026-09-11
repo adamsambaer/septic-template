@@ -1,0 +1,60 @@
+# Keeps a client site in step with its Sapt project.
+#
+# Pulls the project's CMS, Branding and photos into the committed snapshot
+# and pushes the change. Cloudflare Workers Builds (set up by the Deploy
+# Button) sees the push and redeploys. So an edit in Sapt is live within the
+# schedule below, or immediately when this workflow is run by hand.
+#
+# Repo settings needed once per client repo:
+#   Variables:  NEXT_PUBLIC_SAPT_PROJECT_ID   the client's project
+#   Secrets:    SAPT_API_KEY                  a Sapt API key that can read it
+#
+# Sapt itself can also trigger this: a workflow `http` action that POSTs to
+# https://api.github.com/repos/<owner>/<repo>/dispatches with
+# {"event_type":"sapt-sync"} and a GitHub token credential.
+name: Sync from Sapt
+
+on:
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+  repository_dispatch:
+    types: [sapt-sync]
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Pull the Sapt project into the snapshot
+        env:
+          NEXT_PUBLIC_SAPT_PROJECT_ID: ${{ vars.NEXT_PUBLIC_SAPT_PROJECT_ID }}
+          SAPT_API_KEY: ${{ secrets.SAPT_API_KEY }}
+        run: pnpm pull
+
+      - name: Commit and push if anything changed
+        run: |
+          git config user.name "sapt-sync"
+          git config user.email "sapt-sync@users.noreply.github.com"
+          git add src/config/site-config.generated.json public/img/cms
+          if git diff --cached --quiet; then
+            echo "Snapshot unchanged."
+          else
+            git commit -m "Sync site content from Sapt"
+            git push
+          fi

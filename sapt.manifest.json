@@ -1,0 +1,189 @@
+{
+  "$comment": "Structures this template needs in a client's Sapt project. Sapt's Project Settings → Funnel → Prepare project reads this off the repository's default branch and provisions it idempotently. It is the minimum for the site to work: the CRM types the quote form and the text-back workflows write to, and the two brand colors. The full client project (CMS content types, demo content, workflows, roles) comes from the project template snapshot; see scripts/sapt-template.mjs and docs/ONBOARDING.md.",
+  "objectTypes": [
+    {
+      "slug": "lead",
+      "name": "Lead",
+      "description": "An inbound enquiry from the website quote form, chat widget, or a missed call. Publicly ingestable so the site can post straight into it.",
+      "icon": "PhoneIncoming",
+      "color": "#b8791f",
+      "isPublicIngestable": true,
+      "linksToPerson": true,
+      "schema": {
+        "full_name": { "label": "Name", "schema": { "type": "string", "options": {} } },
+        "phone": { "label": "Phone", "schema": { "type": "string", "options": { "format": "phone" } } },
+        "email": { "label": "Email", "schema": { "type": "string", "options": { "format": "email" } } },
+        "service_address": { "label": "Service address", "schema": { "type": "string", "options": {} } },
+        "service_needed": {
+          "label": "Service needed",
+          "description": "Mirrors the quote form's option values exactly. Change one and you must change the other.",
+          "schema": {
+            "type": "select",
+            "options": {
+              "choices": [
+                { "id": "backup_emergency", "slug": "backup_emergency", "label": "Backup or overflow (emergency)" },
+                { "id": "pump_out", "slug": "pump_out", "label": "Routine pump-out" },
+                { "id": "inspection", "slug": "inspection", "label": "Inspection or real estate cert" },
+                { "id": "repair", "slug": "repair", "label": "Repair" },
+                { "id": "new_system", "slug": "new_system", "label": "New system or drain field" },
+                { "id": "unsure", "slug": "unsure", "label": "Not sure" }
+              ]
+            }
+          }
+        },
+        "urgency": {
+          "label": "Urgency",
+          "description": "Emergency leads route straight to the owner's phone, never into a drip sequence.",
+          "schema": {
+            "type": "select",
+            "options": {
+              "choices": [
+                { "id": "emergency_now", "slug": "emergency_now", "label": "Emergency, today" },
+                { "id": "this_week", "slug": "this_week", "label": "This week" },
+                { "id": "this_month", "slug": "this_month", "label": "This month" },
+                { "id": "just_pricing", "slug": "just_pricing", "label": "Just getting pricing" }
+              ]
+            }
+          }
+        },
+        "message": { "label": "Message", "schema": { "type": "string", "options": { "format": "long-text" } } },
+        "source": {
+          "label": "Source",
+          "schema": {
+            "type": "select",
+            "options": {
+              "choices": [
+                { "id": "missed_call", "slug": "missed_call", "label": "Missed call" },
+                { "id": "web_form", "slug": "web_form", "label": "Website quote form" },
+                { "id": "chat_widget", "slug": "chat_widget", "label": "Chat widget" },
+                { "id": "google", "slug": "google", "label": "Google Business Profile" },
+                { "id": "referral", "slug": "referral", "label": "Referral" },
+                { "id": "other", "slug": "other", "label": "Other" }
+              ]
+            }
+          }
+        },
+        "consent_sms": {
+          "label": "SMS consent",
+          "description": "Captured by the website form. Required before any automated text goes out.",
+          "schema": { "type": "boolean", "options": {} }
+        }
+      },
+      "statuses": [
+        { "key": "new", "label": "New", "color": "#b8791f", "isInitial": true },
+        { "key": "contacted", "label": "Contacted", "color": "#33556f", "capiStage": "qualified" },
+        { "key": "quoted", "label": "Quoted", "color": "#5a4b8a" },
+        { "key": "booked", "label": "Booked", "color": "#2c6f52", "capiStage": "scheduled", "isTerminal": true },
+        { "key": "lost", "label": "Lost", "color": "#8a3f33", "isTerminal": true }
+      ]
+    },
+    {
+      "slug": "customer",
+      "name": "Customer",
+      "description": "A septic company's end customer. The last_serviced date drives the automatic pump-out due reminder.",
+      "icon": "Home",
+      "color": "#3f6f4a",
+      "isPublicIngestable": false,
+      "linksToPerson": true,
+      "schema": {
+        "full_name": { "label": "Name", "schema": { "type": "string", "options": {} } },
+        "phone": { "label": "Phone", "schema": { "type": "string", "options": { "format": "phone" } } },
+        "email": { "label": "Email", "schema": { "type": "string", "options": { "format": "email" } } },
+        "service_address": { "label": "Service address", "schema": { "type": "string", "options": {} } },
+        "city": { "label": "City", "schema": { "type": "string", "options": {} } },
+        "system_type": {
+          "label": "System type",
+          "schema": {
+            "type": "select",
+            "options": {
+              "choices": [
+                { "id": "septic_tank", "slug": "septic_tank", "label": "Conventional septic tank" },
+                { "id": "aerobic", "slug": "aerobic", "label": "Aerobic treatment unit" },
+                { "id": "holding_tank", "slug": "holding_tank", "label": "Holding tank" },
+                { "id": "grease_trap", "slug": "grease_trap", "label": "Grease trap" },
+                { "id": "unknown", "slug": "unknown", "label": "Unknown" }
+              ]
+            }
+          }
+        },
+        "tank_size_gallons": { "label": "Tank size (gallons)", "schema": { "type": "number", "options": {} } },
+        "last_serviced": {
+          "label": "Last serviced",
+          "description": "Drives the pump-out due reminder. The anniversary workflow fires off this field.",
+          "schema": { "type": "date", "options": {} }
+        },
+        "service_interval_months": {
+          "label": "Service interval (months)",
+          "description": "Typically 36 for a residential tank. Used to decide when they are due.",
+          "schema": { "type": "number", "options": {} }
+        },
+        "do_not_text": {
+          "label": "Do not text",
+          "description": "Set when a customer opts out. Every send workflow checks this first.",
+          "schema": { "type": "boolean", "options": {} }
+        },
+        "notes": { "label": "Notes", "schema": { "type": "string", "options": { "format": "long-text" } } }
+      }
+    },
+    {
+      "slug": "job",
+      "name": "Job",
+      "description": "A service visit. Moving a job to Completed is what triggers the review request sequence.",
+      "icon": "Truck",
+      "color": "#33556f",
+      "isPublicIngestable": false,
+      "linksToPerson": true,
+      "schema": {
+        "service_type": {
+          "label": "Service type",
+          "schema": {
+            "type": "select",
+            "options": {
+              "choices": [
+                { "id": "pump_out", "slug": "pump_out", "label": "Pump-out" },
+                { "id": "emergency", "slug": "emergency", "label": "Emergency callout" },
+                { "id": "inspection", "slug": "inspection", "label": "Inspection" },
+                { "id": "repair", "slug": "repair", "label": "Repair" },
+                { "id": "install", "slug": "install", "label": "New install or drain field" },
+                { "id": "other", "slug": "other", "label": "Other" }
+              ]
+            }
+          }
+        },
+        "scheduled_for": { "label": "Scheduled for", "schema": { "type": "date", "options": {} } },
+        "completed_at": {
+          "label": "Completed at",
+          "description": "Written when the job moves to Completed. The review sequence waits two hours off this.",
+          "schema": { "type": "date", "options": {} }
+        },
+        "technician": { "label": "Technician", "schema": { "type": "string", "options": {} } },
+        "amount": { "label": "Amount ($)", "schema": { "type": "number", "options": {} } },
+        "review_requested": {
+          "label": "Review requested",
+          "description": "Set by the review workflow so a customer is never asked twice for the same job.",
+          "schema": { "type": "boolean", "options": {} }
+        },
+        "notes": { "label": "Notes", "schema": { "type": "string", "options": { "format": "long-text" } } }
+      },
+      "statuses": [
+        { "key": "scheduled", "label": "Scheduled", "color": "#b8791f", "isInitial": true },
+        { "key": "en_route", "label": "En route", "color": "#33556f" },
+        { "key": "completed", "label": "Completed", "color": "#2c6f52", "capiStage": "purchased" },
+        { "key": "invoiced", "label": "Invoiced", "color": "#5a4b8a", "isTerminal": true },
+        { "key": "cancelled", "label": "Cancelled", "color": "#8a3f33", "isTerminal": true }
+      ]
+    }
+  ],
+  "branding": {
+    "description": "Contractor-grade septic company site: square corners, heavy uppercase headings, one brand color, one emergency color. Primary drives buttons and highlights; Emergency is reserved for the emergency strip and badges.",
+    "keywords": ["rigid", "contractor", "direct", "trustworthy"],
+    "fontStyleCategory": "bold",
+    "colors": [
+      { "name": "Primary", "hex": "#E8631A", "purpose": "primary" },
+      { "name": "Emergency", "hex": "#C4392C", "purpose": "accent" },
+      { "name": "Off-white", "hex": "#F5F5F4", "purpose": "background" },
+      { "name": "Charcoal", "hex": "#14161A", "purpose": "text" }
+    ],
+    "fonts": []
+  }
+}

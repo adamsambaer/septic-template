@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Get your septic site built | Air Acquisition</title>
+<meta name="robots" content="noindex">
+<style>
+  /* Same visual system as the client sites: square corners, heavy uppercase, one orange. */
+  :root { --orange: #E8631A; --orange-dark: #C64F0F; --red: #C4392C; --ink: #14161A; --ink-2: #1E2126; --text: #1a1c20; --muted: #5f6570; --line: #e3e5e8; --bg: #f5f5f4; --surface: #ffffff; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
+  .top { background: var(--ink); color: #fff; padding: 56px 20px 48px; }
+  .wrap { max-width: 880px; margin: 0 auto; }
+  .eyebrow { font-size: 11px; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; color: rgba(255,255,255,.6); }
+  h1 { margin: 14px 0 12px; font-size: clamp(30px, 5vw, 46px); line-height: .98; font-weight: 900; text-transform: uppercase; letter-spacing: -.01em; }
+  h1 span { color: var(--orange); }
+  .top p { max-width: 560px; margin: 0; color: rgba(255,255,255,.75); font-size: 17px; }
+  main { padding: 32px 20px 96px; }
+  form { display: grid; gap: 16px; }
+  section.card { background: var(--surface); border: 1px solid var(--line); border-top: 4px solid var(--orange); padding: 28px 24px; }
+  section.card h2 { margin: 0 0 4px; font-size: 20px; font-weight: 900; text-transform: uppercase; letter-spacing: -.01em; display: flex; gap: 12px; align-items: baseline; }
+  section.card h2 b { display: inline-flex; width: 30px; height: 30px; align-items: center; justify-content: center; background: var(--orange); color: #fff; font-size: 13px; font-weight: 900; flex: none; }
+  section.card > p.help { margin: 0 0 20px; color: var(--muted); font-size: 14px; }
+  .grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  .grid .full { grid-column: 1 / -1; }
+  label { display: block; }
+  label > span { display: block; margin-bottom: 6px; font-size: 11px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+  label > span i { color: var(--orange); font-style: normal; }
+  label small { display: block; margin-top: 5px; font-size: 12px; color: var(--muted); }
+  input[type=text], input[type=email], input[type=tel], input[type=url], input[type=number], textarea, select {
+    width: 100%; padding: 12px 14px; border: 2px solid var(--line); background: #fff; font: inherit; color: var(--text); border-radius: 0; }
+  input:focus, textarea:focus, select:focus { outline: none; border-color: var(--orange); }
+  textarea { min-height: 96px; resize: vertical; }
+  .checks { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  .check { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border: 2px solid var(--line); cursor: pointer; }
+  .check input { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--orange); flex: none; }
+  .check b { display: block; font-weight: 800; }
+  .check small { color: var(--muted); font-size: 12px; }
+  .toggle { display: flex; gap: 10px; align-items: center; padding: 12px 0; font-weight: 700; }
+  .toggle input { width: 18px; height: 18px; accent-color: var(--orange); }
+  .swatch { display: flex; gap: 10px; align-items: center; }
+  .swatch input[type=color] { width: 48px; height: 46px; padding: 0; border: 2px solid var(--line); background: #fff; cursor: pointer; }
+  .review { border: 2px solid var(--line); padding: 16px; display: grid; gap: 12px; }
+  .review h3 { margin: 0; font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+  .submit { display: grid; gap: 12px; }
+  button[type=submit] { width: 100%; padding: 18px; background: var(--orange); color: #fff; border: 0; font: inherit; font-size: 15px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; cursor: pointer; }
+  button[type=submit]:hover { background: var(--orange-dark); }
+  button[type=submit][disabled] { opacity: .6; cursor: wait; }
+  .fine { font-size: 12px; color: var(--muted); }
+  .error { display: none; border-left: 4px solid var(--red); background: #fff; padding: 12px 14px; font-size: 14px; }
+  .error.show { display: block; }
+  .done { display: none; background: var(--ink-2); color: #fff; border-top: 4px solid var(--orange); padding: 40px 28px; text-align: center; }
+  .done.show { display: block; }
+  .done h2 { margin: 0 0 8px; font-size: 28px; font-weight: 900; text-transform: uppercase; }
+  .done p { margin: 0; color: rgba(255,255,255,.7); }
+  .hp { position: absolute; left: -9999px; width: 0; height: 0; opacity: 0; }
+  footer { text-align: center; color: var(--muted); font-size: 12px; padding: 0 20px 40px; }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="eyebrow">Air Acquisition · New client setup</div>
+    <h1>Tell us about your company.<br><span>We build the rest.</span></h1>
+    <p>About ten minutes. Everything here goes straight onto your website and your text-back system, so use the exact wording customers should see. You can change anything later.</p>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <!--
+      Posts one JSON record to the Air Acquisition Sapt project's public
+      ingest endpoint for the `client_onboarding` type. No key needed: the
+      type is public-ingestable. Field names match the CRM schema exactly.
+    -->
+    <form id="f" novalidate
+          data-endpoint="https://api.sapt.ai/public/projects/e07c4bff-37e8-46e3-96eb-f1c0c13b095c/objects/client_onboarding">
+
+      <section class="card">
+        <h2><b>1</b> The company</h2>
+        <p class="help">Exactly as it should appear on the site.</p>
+        <div class="grid">
+          <label><span>Business name <i>*</i></span><input type="text" name="business_name" required placeholder="Coastal Septic Co."></label>
+          <label><span>Legal business name</span><input type="text" name="legal_name" placeholder="Coastal Septic Co. LLC"><small>As on your EIN. Needed to register your number for texting.</small></label>
+          <label><span>Phone customers should call <i>*</i></span><input type="tel" name="business_phone" required placeholder="(954) 555-0142"></label>
+          <label><span>Public email</span><input type="email" name="email_public" placeholder="dispatch@yourcompany.com"><small>Shown on the site. Leave blank to hide.</small></label>
+          <label><span>Current website</span><input type="url" name="current_website" placeholder="https://"></label>
+          <label><span>Years in business</span><input type="number" name="years_in_business" min="0" max="150" placeholder="18"></label>
+          <label class="full"><span>Street address</span><input type="text" name="address_street" placeholder="1420 SW 12th Ave"></label>
+          <label><span>City <i>*</i></span><input type="text" name="address_city" required placeholder="Fort Lauderdale"></label>
+          <label><span>State <i>*</i></span><input type="text" name="address_state" required maxlength="2" placeholder="FL"></label>
+          <label><span>ZIP</span><input type="text" name="address_zip" placeholder="33315"></label>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2><b>2</b> You</h2>
+        <p class="help">How we reach you. Not shown on the site.</p>
+        <div class="grid">
+          <label><span>Your name <i>*</i></span><input type="text" name="owner_name" required></label>
+          <label><span>Your email <i>*</i></span><input type="email" name="owner_email" required></label>
+          <label><span>Your mobile <i>*</i></span><input type="tel" name="owner_phone" required></label>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2><b>3</b> Where you work</h2>
+        <p class="help">Every city gets its own page on Google, so list only the places you actually go.</p>
+        <div class="grid">
+          <label class="full"><span>Counties</span><input type="text" name="counties" placeholder="Broward County, Palm Beach County"><small>Full names, separated by commas.</small></label>
+          <label class="full"><span>Cities</span><textarea name="cities" placeholder="Fort Lauderdale, Pompano Beach, Coral Springs, Davie, Plantation"></textarea><small>Separated by commas or one per line. Up to 30.</small></label>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2><b>4</b> What you do</h2>
+        <p class="help">Tick everything you offer. Each one becomes a page.</p>
+        <div class="checks">
+          <label class="check"><input type="checkbox" name="services_offered" value="emergency" checked><span><b>Emergency septic service</b><small>Backups, overflows, alarms, after hours</small></span></label>
+          <label class="check"><input type="checkbox" name="services_offered" value="pumping" checked><span><b>Septic tank pumping</b><small>Routine pump-outs</small></span></label>
+          <label class="check"><input type="checkbox" name="services_offered" value="inspection" checked><span><b>Inspections & real estate certs</b><small>Home-sale inspections and paperwork</small></span></label>
+          <label class="check"><input type="checkbox" name="services_offered" value="repair" checked><span><b>Repairs</b><small>Pumps, floats, baffles, lids, lines</small></span></label>
+          <label class="check"><input type="checkbox" name="services_offered" value="drain_field" checked><span><b>Drain field repair & replacement</b><small>Restoration and full replacement</small></span></label>
+          <label class="check"><input type="checkbox" name="services_offered" value="install" checked><span><b>New system installation</b><small>New builds and total replacements</small></span></label>
+        </div>
+        <div class="grid" style="margin-top:16px">
+          <label class="toggle"><input type="checkbox" name="emergency_24_7" checked> We take emergency calls 24/7</label>
+          <label><span>Office hours</span><input type="text" name="office_hours" placeholder="Mon–Sat 7am–6pm"></label>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2><b>5</b> Proof</h2>
+        <p class="help">Only real numbers. We never put anything on your site that is not true.</p>
+        <div class="grid">
+          <label><span>License number</span><input type="text" name="license_number" placeholder="SR0000000"></label>
+          <label><span>License type</span><input type="text" name="license_label" placeholder="FL Septic Contractor License"></label>
+          <label class="toggle"><input type="checkbox" name="insured" checked> We are insured</label>
+          <label class="full"><span>Google review link</span><input type="url" name="google_review_url" placeholder="https://g.page/r/..."><small>Google Business Profile → Ask for reviews → copy link. This is what we text your customers.</small></label>
+          <label><span>Google rating</span><input type="number" name="google_rating" step="0.1" min="0" max="5" placeholder="4.8"></label>
+          <label><span>Number of Google reviews</span><input type="number" name="google_review_count" min="0" placeholder="127"></label>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2><b>6</b> Brand &amp; photos</h2>
+        <p class="help">Real photos of your truck and crew beat stock every time. Phone photos are fine.</p>
+        <div class="grid">
+          <label><span>Main brand color</span><div class="swatch"><input type="color" name="brand_primary_color" value="#E8631A"><small>The color of your buttons and highlights.</small></div></label>
+          <label><span>Emergency color</span><div class="swatch"><input type="color" name="brand_accent_color" value="#C4392C"><small>Used only for the emergency bar.</small></div></label>
+          <label class="full"><span>Logo</span><input type="url" name="logo_url" placeholder="https://drive.google.com/..."><small>A link to the file or a shared folder. Transparent PNG or SVG is best. Or text it to us.</small></label>
+          <label class="full"><span>Photos</span><input type="url" name="photos_url" placeholder="https://drive.google.com/... or Dropbox"><small>A shared folder with 5–10 photos: your truck, your crew, an open tank, a drain field job, and one of you.</small></label>
+          <label class="full"><span>Anything about the photos</span><textarea name="photo_notes" placeholder="The blue truck is the main one. The guy in the orange shirt is my son Mike."></textarea></label>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2><b>7</b> In your words</h2>
+        <p class="help">Short and plain is better. We tidy the grammar, not the meaning.</p>
+        <div class="grid">
+          <label class="full"><span>About the company</span><textarea name="about_blurb" placeholder="Family run since 2008. We pump, repair and replace septic systems across Broward and Palm Beach. Same crew every time."></textarea><small>Two to four sentences.</small></label>
+          <label class="full"><span>Three reasons customers choose you</span><textarea name="differentiators" placeholder="Price quoted before we start&#10;Same crew every visit&#10;We tell you when a repair will do instead of a replacement"></textarea><small>One per line.</small></label>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2><b>8</b> Three reviews</h2>
+        <p class="help">Copy them from your Google profile word for word. Skip this and we pull them ourselves.</p>
+        <div class="grid">
+          <div class="review"><h3>Review 1</h3><div class="grid"><label><span>Name</span><input type="text" name="review_1_name" placeholder="Marisol R."></label><label><span>City</span><input type="text" name="review_1_city"></label><label class="full"><span>Service</span><input type="text" name="review_1_service" placeholder="Emergency pump-out"></label><label class="full"><span>Text</span><textarea name="review_1_text"></textarea></label></div></div>
+          <div class="review"><h3>Review 2</h3><div class="grid"><label><span>Name</span><input type="text" name="review_2_name"></label><label><span>City</span><input type="text" name="review_2_city"></label><label class="full"><span>Service</span><input type="text" name="review_2_service"></label><label class="full"><span>Text</span><textarea name="review_2_text"></textarea></label></div></div>
+          <div class="review"><h3>Review 3</h3><div class="grid"><label><span>Name</span><input type="text" name="review_3_name"></label><label><span>City</span><input type="text" name="review_3_city"></label><label class="full"><span>Service</span><input type="text" name="review_3_service"></label><label class="full"><span>Text</span><textarea name="review_3_text"></textarea></label></div></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2><b>9</b> Domain &amp; anything else</h2>
+        <div class="grid">
+          <label><span>Your domain</span><input type="text" name="domain" placeholder="coastalseptic.com"><small>The one you own, or the one you want.</small></label>
+          <label><span>Where is it registered?</span><input type="text" name="domain_access" placeholder="GoDaddy, my nephew has the login"></label>
+          <label class="full"><span>Anything else</span><textarea name="notes"></textarea></label>
+        </div>
+      </section>
+
+      <input class="hp" type="text" name="company_website" tabindex="-1" autocomplete="off" aria-hidden="true">
+
+      <div class="submit">
+        <div class="error" id="err"></div>
+        <button type="submit" id="btn">Send it over</button>
+        <p class="fine">By sending this you agree we may contact you about your website and text-message system. We do not sell or share your information.</p>
+      </div>
+    </form>
+
+    <div class="done" id="done">
+      <h2>Got it.</h2>
+      <p>We will have a first version of your site ready for you to look at, and we will text you when it is up.</p>
+    </div>
+  </div>
+</main>
+
+<footer>Air Acquisition · airacquisition.com</footer>
+
+<script>
+(function () {
+  var form = document.getElementById('f');
+  var btn = document.getElementById('btn');
+  var err = document.getElementById('err');
+  var done = document.getElementById('done');
+
+  var LIST = { counties: 1, cities: 1, differentiators: 1 };      // comma/newline separated → array
+  var NUM = { years_in_business: 1, google_rating: 1, google_review_count: 1 };
+  var BOOL = { emergency_24_7: 1, insured: 1 };
+  var MULTI = { services_offered: 1 };                              // checkboxes → array
+
+  function splitList(v) { return v.split(/[\n,]/).map(function (s) { return s.trim(); }).filter(Boolean); }
+
+  function collect() {
+    var data = { source: 'form' };
+    var fd = new FormData(form);
+    Object.keys(BOOL).forEach(function (k) { data[k] = fd.get(k) === 'on'; });
+    Object.keys(MULTI).forEach(function (k) { data[k] = fd.getAll(k); });
+    fd.forEach(function (value, key) {
+      if (BOOL[key] || MULTI[key] || key === 'company_website') return;
+      var v = String(value).trim();
+      if (!v) return;
+      if (LIST[key]) data[key] = splitList(v);
+      else if (NUM[key]) data[key] = Number(v);
+      else data[key] = v;
+    });
+    // Color inputs always carry a value; drop the template defaults so the
+    // Branding page decides, unless the client actually changed them.
+    if (data.brand_primary_color && data.brand_primary_color.toUpperCase() === '#E8631A') delete data.brand_primary_color;
+    if (data.brand_accent_color && data.brand_accent_color.toUpperCase() === '#C4392C') delete data.brand_accent_color;
+    if (data.address_state) data.address_state = data.address_state.toUpperCase();
+    data.name = data.business_name;                                 // card title in Sapt
+    return data;
+  }
+
+  function fail(msg) { err.textContent = msg; err.classList.add('show'); err.scrollIntoView({ block: 'center' }); btn.disabled = false; btn.textContent = 'Send it over'; }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    err.classList.remove('show');
+    if (form.company_website.value) return;                     // honeypot
+    var missing = Array.prototype.filter.call(form.querySelectorAll('[required]'), function (el) { return !el.value.trim(); });
+    if (missing.length) { missing[0].focus(); return fail('A few required fields are still empty: ' + missing.map(function (el) { return el.previousElementSibling.textContent.replace('*', '').trim(); }).join(', ')); }
+    var data = collect();
+    if (!data.services_offered.length) return fail('Tick at least one service.');
+
+    btn.disabled = true; btn.textContent = 'Sending';
+    fetch(form.dataset.endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data: data }) })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); form.hidden = true; done.classList.add('show'); window.scrollTo({ top: 0, behavior: 'smooth' }); })
+      .catch(function () { fail('That did not send. Try again in a minute, or text us a screenshot of this page and we will take it from there.'); });
+  });
+})();
+</script>
+</body>
+</html>

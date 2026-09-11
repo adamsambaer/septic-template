@@ -14,6 +14,13 @@ const eslintConfig = [
   {
     ignores: ['.next/**', '.open-next/**'],
   },
+  {
+    // Deliberate: this site deploys to Cloudflare Workers via OpenNext, where
+    // next/image's optimizer is not available without extra infrastructure.
+    // Every image is pre-compressed to webp at its display size, so plain
+    // <img> is the correct choice for this target, not an oversight.
+    rules: { '@next/next/no-img-element': 'off' },
+  },
 ]
 
 export default eslintConfig

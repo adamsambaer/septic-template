@@ -1,21 +1,31 @@
 {
-  "name": "sample-website",
+  "name": "septic-template",
   "version": "0.1.0",
   "private": true,
   "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "next dev --turbopack -p 2001",
+    "prebuild": "node scripts/prebuild.mjs",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint . --max-warnings 0",
     "typecheck": "tsc --noEmit",
+    "pretypecheck": "node scripts/ensure-generated.mjs && node -e \"require('fs').rmSync('.next/types',{recursive:true,force:true})\"",
+    "lint": "eslint . --max-warnings 0",
     "test": "vitest run",
-    "deploy:prod": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
-    "init-project": "tsx scripts/init-project.ts"
+    "verify": "npm run typecheck && npm run lint && npm run build",
+    "pull": "node scripts/pull-cms.mjs",
+    "onboard": "node scripts/onboard.mjs",
+    "sapt-template": "node scripts/sapt-template.mjs",
+    "init-project": "tsx scripts/init-project.ts",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "deploy:prod": "pnpm run deploy",
+    "shot": "node scripts/shot.mjs",
+    "ensure": "node scripts/ensure-generated.mjs",
+    "predev": "node scripts/ensure-generated.mjs"
   },
   "dependencies": {
-    "canvas-confetti": "^1.9.4",
     "clsx": "^2.1.1",
     "lucide-react": "^0.544.0",
     "next": "15.4.8",
@@ -28,7 +38,6 @@
     "@eslint/eslintrc": "^3.3.3",
     "@opennextjs/cloudflare": "^1.3.0",
     "@tailwindcss/postcss": "^4",
-    "@types/canvas-confetti": "^1.9.0",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
@@ -40,5 +49,19 @@
     "typescript": "^5",
     "vitest": "^4.1.9",
     "wrangler": "^4"
+  },
+  "packageManager": "pnpm@11.9.0",
+  "cloudflare": {
+    "bindings": {
+      "NEXT_PUBLIC_SAPT_PROJECT_ID": {
+        "description": "The client's Sapt project ID. Copy it from the project in [Sapt](https://app.sapt.ai). Public identifier: it connects the quote form and analytics to the right project."
+      },
+      "NEXT_PUBLIC_SITE_URL": {
+        "description": "The live domain with https://, e.g. **https://www.coastalseptic.com**. Drives canonical links, share images and the sitemap. Use the workers.dev URL until the domain is attached."
+      },
+      "SAPT_API_KEY": {
+        "description": "Optional. A Sapt API key (profile → Account → Create API Key) lets each build pull the client's latest CMS, Branding and photos from Sapt. Leave blank to build from the snapshot committed in the repo."
+      }
+    }
   }
 }

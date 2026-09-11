@@ -1,0 +1,189 @@
+{
+  "_comment": "Canonical CMS content of the septic template, in the exact shapes the Sapt content types take. Used by scripts/onboard.mjs to compose a new client's site from an intake record, and as the reference for re-seeding a template project. Select fields carry the fixed 8-char choice ids (see scripts/lib/cms-map.mjs). Images are r2 keys in the Air Acquisition project's asset library.",
+  "settings": {
+    "tagline": "Septic pumping, repair & emergency service",
+    "theme": "themelgt",
+    "emergencyEnabled": true,
+    "emergencyLabel": "Septic emergency?",
+    "emergencyCtaText": "Call now",
+    "eyebrow": "Your Local Septic Specialists",
+    "heroHeadline": "Clean property.",
+    "heroHeadlineAccent": "Septic done right.",
+    "ctaText": "Get a Free Quote",
+    "trustLicenseLabel": "FL Septic Contractor License",
+    "aboutHeadline": "Local, licensed, and actually reachable",
+    "aboutPoints": [
+      "Straight pricing quoted before we start work",
+      "Same crew every visit, so nothing gets lost between jobs",
+      "We tell you when a system can be repaired instead of replaced"
+    ],
+    "pageServices": true,
+    "pageServiceAreas": true,
+    "pageAbout": true,
+    "pageReviews": true,
+    "pageContact": true,
+    "pagePrivacy": true,
+    "pageTerms": true
+  },
+  "services": {
+    "emergency": {
+      "title": "Emergency Septic Service",
+      "slug": "emergency-septic-service",
+      "icon": "icsiren0",
+      "formOption": "fobackup",
+      "description": "Backups, overflows and alarms. We answer after hours and dispatch the same day, because a failing system does not wait for business hours.",
+      "intro": "A backup does not care what time it is. When sewage is coming up a drain or an alarm is going off, you need a truck moving now and a straight answer on what it will cost.",
+      "included": ["After-hours and weekend callouts", "Backup and overflow clearing", "Alarm diagnosis on aerobic systems", "Emergency pump-out to relieve the system", "Temporary fixes to get you through to a permanent repair"],
+      "process": [
+        { "title": "Call, day or night", "body": "Tell us what is happening: backup, overflow, alarm, smell. We ask two or three questions and dispatch." },
+        { "title": "Truck on the way", "body": "You get a text with an arrival window. On a backup the first job is getting the house usable again." },
+        { "title": "Relieve the system", "body": "Usually an emergency pump-out to stop the backup, plus clearing the inlet or outlet if that is what is blocked." },
+        { "title": "Find the cause", "body": "While the tank is open we check the baffles, filter, pump and drain field, so you know whether this was a one-off or a warning." },
+        { "title": "Written next step", "body": "If a repair is needed you get a written price on the spot. If nothing else is wrong, we log the date and text you before the next service is due." }
+      ],
+      "faqs": [
+        { "question": "What counts as a septic emergency?", "answer": "Sewage backing up into the house, effluent surfacing in the yard, a high-water alarm, or toilets that will not flush anywhere in the house. Any of those, call now. It gets worse, not better." },
+        { "question": "What should I do while I wait for the truck?", "answer": "Stop running water: no laundry, dishwasher or showers. Keep people and pets away from any wet area in the yard. Do not open the tank lid yourself." },
+        { "question": "Will an emergency pump-out fix the problem for good?", "answer": "It relieves the immediate backup. If the cause was a full tank, that is the fix. If a pump has failed or the drain field is saturated, pumping buys time, and we tell you what the permanent fix is before we leave." },
+        { "question": "Do you charge more after hours?", "answer": "Ask on the call. Whatever the rate is, you hear it before the truck leaves and it does not change on site." }
+      ],
+      "image": { "kind": "r2", "key": "e07c4bff-37e8-46e3-96eb-f1c0c13b095c/cms/1b708c42-0702-4ce9-828e-3b2bc227832a/svc-emergency-night-callout.webp" },
+      "focal": "40% 50%"
+    },
+    "pumping": {
+      "title": "Septic Tank Pumping",
+      "slug": "septic-tank-pumping",
+      "icon": "ictruck0",
+      "formOption": "fopumpot",
+      "description": "Routine pump-outs for residential and commercial tanks. Most homes need this every three to five years, and we track yours so you never have to remember.",
+      "intro": "Routine pumping is the cheapest thing you will ever do for a septic system. Skip it and the solids reach the drain field, and that is a five-figure repair instead of a few hundred dollars.",
+      "included": ["Full tank pump-out, residential and commercial", "Baffle and lid inspection while the tank is open", "Solids and sludge level check", "Service date logged so we text you when the next one is due", "Riser installation if the lid is buried"],
+      "process": [
+        { "title": "Book by phone or form", "body": "Tell us the tank size if you know it and when it was last pumped. If you do not know, we find out on site." },
+        { "title": "Flat price by tank size", "body": "Pump-outs are quoted as a flat rate by tank size before we come. No hourly meter." },
+        { "title": "Locate and open the tank", "body": "We find the lid, uncover it, and note where it is for next time. If it is buried deep we can fit a riser so it never needs digging again." },
+        { "title": "Pump, inspect, close", "body": "Full pump-out, then a check of the baffles, filter and liquid level while the tank is open. Lid back on, yard put back." },
+        { "title": "Reminder before you are due", "body": "Service date logged. You get a text when the next pump-out is coming up, usually three to five years out." }
+      ],
+      "faqs": [
+        { "question": "How often should my tank be pumped?", "answer": "Every three to five years for most households. A garbage disposal, a big family or a high water table push it toward three. We log the date and text you when you are due." },
+        { "question": "How long does a pump-out take?", "answer": "Usually under an hour once the lid is exposed. Finding a buried lid adds time, which is why a riser pays for itself." },
+        { "question": "Do I need to be home?", "answer": "Not if we can reach the tank and you have told us where it is. We text before we arrive and when we are done." },
+        { "question": "What if the tank has not been pumped in ten years?", "answer": "We pump it, and we look hard at the drain field, because that is where the solids go when a tank is neglected. You get a straight answer on the field before we leave." }
+      ],
+      "image": { "kind": "r2", "key": "e07c4bff-37e8-46e3-96eb-f1c0c13b095c/cms/df28a071-9fbc-457f-97d9-268e1a5ba0d8/svc-pumping-hose-in-riser.webp" },
+      "focal": "50% 40%"
+    },
+    "inspection": {
+      "title": "Inspections & Real Estate Certs",
+      "slug": "septic-inspection",
+      "icon": "icclipbd",
+      "formOption": "foinspct",
+      "description": "Full system inspection with the documentation lenders and buyers require. Scheduled fast so your closing does not slip.",
+      "intro": "Lenders, buyers and county programs all want the same thing: proof the system works, in writing, fast. We schedule around your closing date and get the report out the same day we are there.",
+      "included": ["Real estate transaction inspections", "Written certification for lenders and buyers", "Tank, baffle and drain field condition report", "Locating a buried tank when there is no record of it", "Fast turnaround to protect a closing date"],
+      "process": [
+        { "title": "Tell us the closing date", "body": "We schedule around it. Most inspections are booked within a couple of days." },
+        { "title": "Locate and open", "body": "We find the tank and any distribution box. If there is no record of the system, we locate it." },
+        { "title": "Inspect and test", "body": "Tank condition, baffles, liquid level, pump and floats if there is a pump, and a load test on the drain field." },
+        { "title": "Written report, same day", "body": "The certification goes to you, and to the lender or agent if you want, the day we are on site." },
+        { "title": "Repairs, if anything fails", "body": "If something needs fixing to pass, you get a written price and we can usually do the work before closing." }
+      ],
+      "faqs": [
+        { "question": "Does a home sale require a septic inspection?", "answer": "Usually not by state law, but most lenders and many buyers require one, and some county programs do. Ask your agent or lender what they want in writing, then send it to us." },
+        { "question": "How long does the inspection take?", "answer": "Usually one to two hours on site. The report goes out the same day." },
+        { "question": "Does the tank get pumped during an inspection?", "answer": "A proper inspection needs the tank pumped so the walls and baffles can be seen. We quote the inspection and the pump-out together so there is no surprise." },
+        { "question": "What happens if the system fails?", "answer": "You get a written list of what failed and what fixing it costs. We do not fail systems to sell repairs, and you are welcome to get a second opinion on our report." }
+      ],
+      "image": { "kind": "r2", "key": "e07c4bff-37e8-46e3-96eb-f1c0c13b095c/cms/53cd8e01-959b-4dce-afe8-df42edc94e6d/svc-inspection-tech-and-homeowner.webp" },
+      "focal": "35% 45%"
+    },
+    "repair": {
+      "title": "Repairs",
+      "slug": "septic-repair",
+      "icon": "icwrench",
+      "formOption": "forepair",
+      "description": "Pumps, floats, baffles, lids and lines. We diagnose the actual fault instead of quoting a replacement for a part that can be fixed.",
+      "intro": "Most septic problems are one failed part, not a failed system. We diagnose the actual fault and fix that, instead of quoting a full replacement for something a new pump or baffle would solve.",
+      "included": ["Effluent pump and float switch replacement", "Baffle repair and replacement", "Lid, riser and concrete slab repair", "Broken inlet and outlet line repair", "Aerobic system component repair"],
+      "process": [
+        { "title": "Describe the symptoms", "body": "Alarm, slow drains, a wet patch, a pump that will not run. The more you tell us, the faster the diagnosis." },
+        { "title": "Diagnose on site", "body": "We open the tank and test the actual parts: pump, floats, baffles, filter, lines. No guessing from the driveway." },
+        { "title": "Written price before we start", "body": "One number for the repair, in writing, before any part is replaced." },
+        { "title": "Fix it", "body": "Most component repairs are done the same visit. Common parts ride on the truck." },
+        { "title": "Test and log", "body": "We run the system to confirm the fix, put the lid back, and log the work so the next tech knows the history." }
+      ],
+      "faqs": [
+        { "question": "Can my system be repaired, or does it have to be replaced?", "answer": "Most problems are one failed part. Replacement is only on the table when the tank is structurally failed or the drain field is gone, and we tell you which it is before quoting." },
+        { "question": "Why is my septic alarm going off?", "answer": "The high-water alarm means the pump chamber is not draining: a failed pump, a stuck float, a tripped breaker, or a saturated field. Check the breaker first, then call, and stop running water until we arrive." },
+        { "question": "Do you carry parts on the truck?", "answer": "Common pumps, floats, baffles and filters, yes. Anything unusual is ordered and fitted on a second visit, with the price agreed first." },
+        { "question": "How do I know a repair is what I actually need?", "answer": "You see what we found, with the tank open, before we quote. Get a second opinion if you want one." }
+      ],
+      "image": { "kind": "r2", "key": "e07c4bff-37e8-46e3-96eb-f1c0c13b095c/cms/68393698-ef35-4800-9164-69179c81a46d/svc-repairs-truck-detail.webp" },
+      "focal": "50% 55%"
+    },
+    "drain_field": {
+      "title": "Drain Field Repair & Replacement",
+      "slug": "drain-field-repair",
+      "icon": "iclayers",
+      "formOption": "fonewsys",
+      "description": "Saturated or failing drain fields, restored where possible and replaced where it is not. Permitting handled end to end.",
+      "intro": "A saturated drain field is the expensive end of septic work, so it is worth getting the diagnosis right. Some fields can be restored. Others have to be replaced, and we tell you which before any digging starts.",
+      "included": ["Drain field diagnosis and load testing", "Restoration where the field can be saved", "Full replacement with new gravel and lateral lines", "County permitting handled end to end", "Yard restored after the work"],
+      "process": [
+        { "title": "Diagnosis first", "body": "Wet ground, backups when it rains, or a failed inspection. We test the field before anyone talks about replacing it." },
+        { "title": "Restore or replace", "body": "Some fields can be restored. Others are done. You get a straight answer and a written price for whichever it is." },
+        { "title": "Permit with the county", "body": "Replacement needs a permit and a site evaluation. We handle both." },
+        { "title": "Build the new field", "body": "Old lines removed, new gravel and laterals set to the approved design, inspected before it is covered." },
+        { "title": "Backfill and restore the yard", "body": "Graded, backfilled and left ready for sod. Service date logged for the tank going forward." }
+      ],
+      "faqs": [
+        { "question": "How do I know my drain field is failing?", "answer": "Standing water or unusually green grass over the field, a sewage smell outside, backups after rain or heavy use, or a tank that fills up fast after pumping." },
+        { "question": "Can a drain field be saved?", "answer": "Sometimes. A clogged distribution box, a crushed line, or a one-time push of solids from a neglected tank can often be put right. A field that has been saturated for years usually cannot." },
+        { "question": "How long does a replacement take?", "answer": "Permitting is the slow part, often a few weeks with the county. The dig itself is usually a few days." },
+        { "question": "Will my yard be destroyed?", "answer": "The field area gets dug up, there is no way around that. We keep the footprint to the approved design and leave it graded and ready for sod." }
+      ],
+      "image": { "kind": "r2", "key": "e07c4bff-37e8-46e3-96eb-f1c0c13b095c/cms/ab0189c9-8107-4b4c-97df-c1a117075cd0/svc-drainfield-trench.webp" },
+      "focal": "60% 55%"
+    },
+    "install": {
+      "title": "New System Installation",
+      "slug": "septic-installation",
+      "icon": "ichardht",
+      "formOption": "fonewsys",
+      "description": "Full septic installs for new builds and total replacements, sized to your property and permitted with the county.",
+      "intro": "New builds, total replacements and system upgrades, sized to the property and permitted with the county. One crew from the first site visit to the final inspection.",
+      "included": ["Site evaluation and soil assessment", "System sizing for the household or business", "Precast tank installation", "Drain field construction", "Permits, inspections and county sign-off"],
+      "process": [
+        { "title": "Site visit and soil evaluation", "body": "We look at the lot, the water table and where the house sits, and size the system to the bedrooms and the use." },
+        { "title": "Design and permit", "body": "A system design goes to the county for the permit. We handle the paperwork and the site evaluation." },
+        { "title": "Set the tank", "body": "Precast tank delivered and set by crane, connected to the house line, and checked for level and seal." },
+        { "title": "Build the drain field", "body": "Laterals and gravel to the approved design, then the county inspection before anything is covered." },
+        { "title": "Backfill, start-up and sign-off", "body": "Backfilled, graded and started up. You get the as-built paperwork and the county sign-off for your records." }
+      ],
+      "faqs": [
+        { "question": "How long does a new septic install take?", "answer": "Permitting is usually the longest part, often several weeks. The install itself is typically a few days plus the county inspection." },
+        { "question": "What size system do I need?", "answer": "Sized by bedroom count and soil under the county rules, not by what is cheapest to put in. We size it right the first time." },
+        { "question": "Do you handle the permits?", "answer": "Yes. Design, application, site evaluation and the final inspection." },
+        { "question": "Can I stay in the house during the install?", "answer": "For a replacement, usually yes, with limited water use on the day the tank is switched over. We tell you exactly when." }
+      ],
+      "image": { "kind": "r2", "key": "e07c4bff-37e8-46e3-96eb-f1c0c13b095c/cms/d876096f-fa4f-4b96-93f3-ec4da89dc979/svc-install-tank-set.webp" },
+      "focal": "50% 55%"
+    }
+  },
+  "faqs": [
+    { "question": "How often does a septic tank need pumping?", "answer": "Most households need a pump-out every three to five years. High water tables, a big family, or a garbage disposal push it toward three. We record your last service date and tell you when the next one is due." },
+    { "question": "What are the warning signs my system is failing?", "answer": "Slow drains across the whole house, gurgling toilets, a sewage smell in the yard, or grass that is unusually green and wet over the drain field. Any of those means call now rather than next month." },
+    { "question": "How much does a septic pump-out cost?", "answer": "It depends on tank size, access, and how long it has been. We quote before we come out, and we do not change the number once we are on site unless we find something and tell you first." },
+    { "question": "Do you handle emergencies after hours?", "answer": "Yes. Backups and overflows do not wait for business hours, and neither do we. Call the number on this page and you will reach someone." },
+    { "question": "Can you find my tank if I do not know where it is?", "answer": "Yes. Plenty of older properties have a buried lid with no record of it. We locate it, and if it makes sense we fit a riser so it never has to be dug up again." },
+    { "question": "Do you provide inspections for a home sale?", "answer": "Yes, including the written documentation lenders and buyers ask for. We schedule these quickly because they usually sit on a closing date." }
+  ],
+  "steps": [
+    { "title": "Call or send the form", "body": "Tell us what the system is doing. We ask the few questions that decide which truck and crew to send." },
+    { "title": "Know the price before work starts", "body": "Pump-outs are a flat rate by tank size, quoted on the phone. Repairs and installs get a look on site first, then a written number. Nothing starts until you have said yes to it." },
+    { "title": "Locate, open and inspect", "body": "We find the tank, uncover the lid, and check baffles, sludge levels and the drain field while it is open. If we spot a problem, you hear about it before we close it up." },
+    { "title": "Do the work, leave it clean", "body": "Licensed crew, the right equipment, and the yard put back the way we found it." },
+    { "title": "You know when you are due", "body": "We log the service date and text you before the next one is due, so routine service never turns into an emergency." }
+  ]
+}

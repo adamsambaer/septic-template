@@ -14,12 +14,13 @@ test
 dist
 build
 
-# Environment
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+# Environment and local Worker secrets. The two *.example files are the
+# Deploy Button's prompts and stay tracked.
+.env*
+!.env.example
+!.env.local.example
+.dev.vars*
+!.dev.vars.example
 
 # NPM credentials
 .npmrc
@@ -43,3 +44,9 @@ next-env.d.ts
 
 # Misc
 *.log
+screenshots/
+
+# Agency-only outputs. The client snapshot (src/config/site-config.generated.json)
+# and pulled photos (public/img/cms/) ARE tracked: a clone must build with no secret.
+onboarding/out/
+onboarding/template-bundle.json
