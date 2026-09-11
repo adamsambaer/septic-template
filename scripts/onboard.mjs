@@ -30,6 +30,7 @@ import { fileURLToPath } from 'node:url'
 import { mapCms } from './lib/cms-map.mjs'
 import { onboardingToBundle } from './lib/onboard-map.mjs'
 import { needsRebind, rebindActions } from './lib/rebind.mjs'
+import { clientStarterItems } from './lib/starter-content.mjs'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const AGENCY_DEFAULT = 'e07c4bff-37e8-46e3-96eb-f1c0c13b095c'
@@ -158,7 +159,27 @@ async function main() {
           owner_mobile: bundle.ownerMobile || '',
           google_review_url: s.trustGoogleReviewUrl || '',
         }
-        const r = await api(`/projects/${agency}/templates/${templateId}/apply`, { method: 'POST', body: JSON.stringify({ name: s.companyName, variableValues }) })
+        // Stamp THEIR content, not the demo's. Sapt has no REST write for CMS
+        // items, but a template is just a bundle: base structure + this
+        // client's starter items, saved as a one-off template, applied, deleted.
+        const base = (await api(`/projects/${agency}/templates/${templateId}`)).data.bundle
+        const starter = clientStarterItems(base, bundle)
+        notes.push(...starter.notes)
+        const temp = (await api(`/projects/${agency}/templates`, {
+          method: 'POST',
+          body: JSON.stringify({
+            name: `onboard ${bundle.slug} ${new Date().toISOString().slice(0, 16)}`,
+            description: "Temporary: the septic template with this client's starter content. Created and deleted by pnpm onboard.",
+            bundle: { ...base, starterContent: { enabled: true, items: starter.items } },
+          }),
+        })).data
+        let r
+        try {
+          r = await api(`/projects/${agency}/templates/${temp.id}/apply`, { method: 'POST', body: JSON.stringify({ name: s.companyName, variableValues }) })
+        } finally {
+          await api(`/projects/${agency}/templates/${temp.id}`, { method: 'DELETE' }).catch((e) => console.log(`  check     temporary template ${temp.id} was not deleted: ${e.message}`))
+        }
+        console.log(`  content   ${starter.items.length} starter items composed from the record: ${bundle.services.length} services, ${bundle.cities.length} cities, ${bundle.reviews.length} reviews, ${bundle.faqs.length} FAQs, ${bundle.steps.length} steps`)
         projectId = r.data.project.id
         const rep = r.data.templateApply?.report
         console.log(`  project   created ${projectId} (${r.data.project.slug}) from template: ${r.data.templateApply?.status}${r.data.templateApply?.error ? ' ' + r.data.templateApply.error : ''}`)
@@ -198,7 +219,7 @@ async function main() {
   console.log(`
 next:
   1. pnpm verify            builds their site from the snapshot just written
-  2. push the CMS           "push onboarding/out/${bundle.slug}/cms-bundle.json into project ${projectId || '<client project id>'}" (Sapt MCP)
+  2. photos + logo          download from the folder they shared, upload to Assets / Branding in project ${projectId || '<client project id>'}, pick them in 2 · Photos
   3. .env.local             NEXT_PUBLIC_SAPT_PROJECT_ID=${projectId || '<client project id>'}  NEXT_PUBLIC_SITE_URL=${config.siteUrl || '<domain>'}
   4. pnpm deploy:prod       then move the card to Client review
 `)

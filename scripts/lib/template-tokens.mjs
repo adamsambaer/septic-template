@@ -75,6 +75,17 @@ export function tokenizeBundle(bundle, tokens = TOKENS) {
   return { bundle: walk(bundle), hits }
 }
 
+/**
+ * Blank every starter item's publishedAt. Sapt stores the bundle as JSON, so
+ * the value is a string, and its apply step calls `.toISOString()` on it and
+ * throws ("e.toISOString is not a function", verified 12 Sep 2026). With null
+ * the item still applies as published. Mutates and returns the bundle.
+ */
+export function stripStarterDates(bundle) {
+  for (const item of bundle.starterContent?.items ?? []) item.publishedAt = null
+  return bundle
+}
+
 const AGENCY_TYPE_SLUGS = new Set(['client_onboarding'])
 const AGENCY_TAG = 'agency-ops'
 const mentionsAgency = (x) => JSON.stringify(x).includes('client_onboarding')

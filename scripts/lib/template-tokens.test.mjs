@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { residue, stripAgency, tokenizeBundle, variableDeclarations } from './template-tokens.mjs'
+import { residue, stripAgency, stripStarterDates, tokenizeBundle, variableDeclarations } from './template-tokens.mjs'
 
 const bundle = {
   branding: { colors: [{ name: 'Primary', hex: '#e8631a' }, { name: 'Emergency', hex: '#C4392C' }], tagline: 'Coastal Septic Co. since 2009' },
   starterContent: {
     enabled: true,
     items: [
-      { contentTypeSlug: 'site-settings', slug: 'default', publishedAt: '2026-09-10T22:39:05.557Z', content: { legalName: 'Coastal Septic Co. LLC', companyName: 'Coastal Septic Co.', phone: '(954) 555-0142', phoneE164: '+19545550142', zip: '33315', note: 'Suite 333150 is not a zip' } },
+      { contentTypeSlug: 'site-settings', slug: 'default', status: 'published', publishedAt: '2026-09-10T22:39:05.557Z', content: { legalName: 'Coastal Septic Co. LLC', companyName: 'Coastal Septic Co.', phone: '(954) 555-0142', phoneE164: '+19545550142', zip: '33315', note: 'Suite 333150 is not a zip' } },
     ],
   },
   workflows: [
@@ -56,6 +56,15 @@ describe('stripAgency', () => {
     expect(b.sidebar.sections.map((x) => x.title)).toEqual(['Leads'])
     expect(b.workflows.map((w) => w.name)).toEqual(['New lead → text the owner'])
     expect(removed).toHaveLength(4)
+  })
+})
+
+describe('stripStarterDates', () => {
+  it('nulls publishedAt on every starter item and leaves status alone', () => {
+    const b = stripStarterDates(structuredClone(bundle))
+    expect(b.starterContent.items.every((i) => i.publishedAt === null)).toBe(true)
+    expect(b.starterContent.items[0].status).toBe('published')
+    expect(stripStarterDates({})).toEqual({})
   })
 })
 

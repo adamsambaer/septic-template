@@ -53,19 +53,25 @@ form lands ─▶ pnpm onboard <id> --create-project ─▶ Deploy Button ─▶
 
    `onboard` composes the site from the record plus template copy and writes the
    snapshot, so the site builds with their content right away. With
-   `--create-project` it stamps the template onto a new Sapt sub-project with
-   their name, number, address, colors and Google review link filled into every
-   `{{variable}}`, re-binds the workflows' Telnyx actions (Sapt scrubs every
-   HTTP url, header and body out of a template, so `onboard` copies them back
-   from the agency project by workflow name, filling `{{owner_mobile}}` and
-   `{{google_review_url}}`), reads the stamped CMS back to prove it landed, and
-   writes the project id onto the record. It prints a `check` line for
-   everything it could not do from the record (photos in a folder, no logo, no
-   reviews, cities not tagged with a county).
-3. **Finish the CMS.** Cities and reviews from the record are pushed into the new
-   project through the Sapt MCP (`onboarding/out/<slug>/cms-bundle.json`). Then
-   photos and logo: download from the folder they shared, upload to the project's
-   Assets and Branding, pick them in 2 · Photos and on each service.
+   `--create-project` it builds a one-off template (the septic template's
+   structure plus starter content composed from the record: their settings,
+   only the services they offer, their cities and reviews, the template's FAQ
+   and steps), stamps it onto a new Sapt sub-project with name, number,
+   address, colors and Google review link filled into every `{{variable}}`,
+   deletes the one-off template, re-binds the workflows' Telnyx actions (Sapt
+   scrubs every HTTP url, header and body out of a template, so `onboard`
+   copies them back from the agency project by workflow name, filling
+   `{{owner_mobile}}` and `{{google_review_url}}`), reads the stamped CMS back
+   to prove it landed, and writes the project id onto the record. It prints a
+   `check` line for everything it could not do from the record (photos in a
+   folder, no logo, no reviews, cities not tagged with a county).
+
+   Verified end to end on 12 Sep 2026 with a fake client: 47 entities applied,
+   0 failures, and `pnpm pull` against the new project returned their 4
+   services, 4 cities, 2 reviews and colors.
+3. **Photos and logo.** The only manual step. Download from the folder they
+   shared, upload to the project's Assets and Branding, pick them in 2 · Photos
+   and on each service. Until then the demo photos show.
 4. **Deploy.** Click the Deploy to Cloudflare button in the README. Paste the
    client's Project ID and site URL when asked. Cloudflare clones the repo into
    your GitHub, sets up Workers Builds and deploys. Then in the new repo's
@@ -134,11 +140,15 @@ read for certain.
   flat body creates an empty record. List fields (`counties`, `cities`,
   `differentiators`, `services_offered`) must be arrays; the form splits them.
 - Sapt has no REST write for CMS content, only the connector and the dashboard.
-  Template starter content covers everything at project creation; cities and
-  reviews from the record are the one connector step.
+  Templates are writable though (`POST /projects/{id}/templates` takes a whole
+  bundle), so `onboard` writes the client's content as starter items of a
+  one-off template and applies that (`scripts/lib/starter-content.mjs`).
 - Snapshotting with Sapt's own `tokenize` option and `starterContent` together
   fails validation (it corrupts every item's `publishedAt`). The snapshot script
   captures plain and tokenizes client-side (`scripts/lib/template-tokens.mjs`).
+- Applying a template whose starter items carry a `publishedAt` string crashes
+  every item ("toISOString is not a function"). The snapshot script blanks the
+  field; items still apply as published.
 - A template scrubs every workflow HTTP action into
   `__sapt_template_rebind_required__` markers. `scripts/lib/rebind.mjs` fills
   them back from the agency project after apply.

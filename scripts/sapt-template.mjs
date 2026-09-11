@@ -25,7 +25,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { TOKENS, residue, stripAgency, tokenizeBundle, variableDeclarations } from './lib/template-tokens.mjs'
+import { TOKENS, residue, stripAgency, stripStarterDates, tokenizeBundle, variableDeclarations } from './lib/template-tokens.mjs'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const AGENCY_DEFAULT = 'e07c4bff-37e8-46e3-96eb-f1c0c13b095c'
@@ -122,6 +122,7 @@ async function main() {
     // 2. Tokenize + strip locally, patch the bundle back.
     const { bundle, hits } = tokenizeBundle(template.bundle, tokens)
     const removed = stripAgency(bundle)
+    stripStarterDates(bundle)
     await api(`/projects/${agency}/templates/${template.id}`, { method: 'PATCH', body: JSON.stringify({ bundle }) })
     for (const r of removed) console.log(`  removed  ${r}`)
     console.log(`  tokens   ${Object.entries(hits).map(([k, v]) => `${k}×${v}`).join('  ') || 'none hit'}`)
@@ -129,9 +130,9 @@ async function main() {
     // 3. Read it back and prove the patch stuck.
     const saved = (await api(`/projects/${agency}/templates/${template.id}`)).data.bundle
     const savedItems = saved.starterContent?.items ?? []
-    const badDates = savedItems.filter((i) => i.publishedAt && Number.isNaN(Date.parse(i.publishedAt))).length
+    const datedItems = savedItems.filter((i) => i.publishedAt != null).length
     const placeholders = (JSON.stringify(saved).match(/\{\{[a-zA-Z_]\w*\}\}/g) || []).length
-    console.log(`  verified ${savedItems.length} starter items, ${badDates} bad dates, ${placeholders} placeholders in the stored bundle`)
+    console.log(`  verified ${savedItems.length} starter items (${datedItems} still dated, want 0), ${placeholders} placeholders in the stored bundle`)
     for (const r of residue(saved)) console.log(`  LEFTOVER ${r.path}: ${r.value}`)
     console.log(JSON.stringify(summarize(saved), null, 2))
     console.log(`\nSAPT_TEMPLATE_ID=${template.id}   ← put this in .env.local`)
