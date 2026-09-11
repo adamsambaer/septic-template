@@ -85,7 +85,7 @@ lead texts the owner and texts the visitor back over Telnyx; nothing goes to ema
 | --- | --- | --- |
 | `NEXT_PUBLIC_SAPT_PROJECT_ID` | Deploy Button prompt, repo variable | The client's Sapt project. Where the form posts, what `pull` reads. |
 | `NEXT_PUBLIC_SITE_URL` | Deploy Button prompt | Canonical URLs, Open Graph, sitemap. Overrides the CMS value. |
-| `SAPT_API_KEY` | repo secret, optional Worker secret | Build-time only. Lets `pull` read the project. Never shipped to the browser. |
+| `SAPT_API_KEY` | repo secret, optional Worker secret | Build-time only. Lets `pull` read the project. Never shipped to the browser. Create it in Sapt with **Use my live permissions** ticked so it also covers client projects made later. |
 | `NEXT_PUBLIC_SAPT_BASE_URL` | optional | API base, default `https://api.sapt.ai` |
 | `NEXT_PUBLIC_SAPT_INGEST_URL` | optional | Analytics ingest, default `https://ingest.sapt.ai` |
 

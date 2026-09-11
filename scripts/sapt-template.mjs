@@ -5,16 +5,18 @@
  *   pnpm sapt-template snapshot [name]       capture the agency project as a clean, tokenized template
  *   pnpm sapt-template show <templateId>     print a template's bundle summary
  *   pnpm sapt-template apply <templateId> "<Client name>" [--vars key=value ...]
+ *   pnpm sapt-template delete <templateId>
  *
  * `snapshot` does three things Sapt's dashboard button does not:
  *   1. Tokenizes the demo company's strings into {{variables}} (companyName,
- *      phone, phoneE164, email, street, city, state, zip, primaryHex,
- *      accentHex), so a project stamped from the template already reads the
- *      client's name and number everywhere: CMS starter content, branding,
- *      workflow message bodies.
+ *      phone, phoneE164, email, street, zip, primaryHex, accentHex …), so a
+ *      project stamped from the template already reads the client's name and
+ *      number everywhere: CMS starter content, branding, workflow bodies.
+ *      This happens client-side (scripts/lib/template-tokens.mjs): Sapt's own
+ *      `tokenize` option corrupts starter-content dates.
  *   2. Strips agency-only entities that live in the same project but do not
- *      belong on a client: the `client_onboarding` CRM type and any workflow
- *      tagged `agency-ops`.
+ *      belong on a client: the `client_onboarding` CRM type, its relations and
+ *      sidebar section, and any workflow tagged `agency-ops`.
  *   3. Includes CMS starter content, which the default snapshot leaves out.
  *
  * Needs SAPT_API_KEY (agency project) and SAPT_AGENCY_PROJECT_ID (defaults to
@@ -23,6 +25,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { TOKENS, residue, stripAgency, tokenizeBundle, variableDeclarations } from './lib/template-tokens.mjs'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const AGENCY_DEFAULT = 'e07c4bff-37e8-46e3-96eb-f1c0c13b095c'
@@ -49,49 +52,12 @@ async function api(route, init = {}) {
   return data
 }
 
-/** The demo company's literals → template variables. Order matters: longer, more specific strings first. */
-export const TOKENS = [
-  { find: 'Coastal Septic Co. LLC', var: 'legalName', label: 'Legal business name', example: 'Gulfside Septic LLC' },
-  { find: 'Coastal Septic Co.', var: 'companyName', label: 'Company name', example: 'Gulfside Septic', required: true },
-  { find: '(954) 555-0142', var: 'phone', label: 'Phone, as displayed', example: '(239) 555-0100', required: true },
-  { find: '+19545550142', var: 'phoneE164', label: 'Phone, dialable (+1…)', example: '+12395550100', required: true },
-  { find: 'dispatch@coastalseptic.example', var: 'email', label: 'Public email', example: 'office@client.com' },
-  { find: 'https://coastalseptic.example', var: 'siteUrl', label: 'Site URL', example: 'https://www.client.com' },
-  { find: '1420 SW 12th Ave', var: 'street', label: 'Street address', example: '88 Palm Ave' },
-  { find: '33315', var: 'zip', label: 'ZIP', example: '33904' },
-  { find: '#E8631A', var: 'primaryHex', label: 'Primary brand color', example: '#1D6FB8' },
-  { find: '#C4392C', var: 'accentHex', label: 'Emergency color', example: '#C4392C' },
-]
-
-/** Declared but not tokenized: these have no demo literal, the workflows already carry the {{placeholder}}. */
-export const EXTRA_VARIABLES = [
-  { name: 'owner_mobile', label: "Owner's mobile (E.164), receives lead alerts", example: '+12395550110', required: false },
-  { name: 'from_number', label: 'Telnyx sending number (E.164)', example: '+12395550199', required: false },
-]
-
-const AGENCY_TYPE_SLUGS = new Set(['client_onboarding'])
-const AGENCY_TAG = 'agency-ops'
-
-function stripAgency(bundle) {
-  const removed = []
-  if (Array.isArray(bundle.objectTypes)) {
-    bundle.objectTypes = bundle.objectTypes.filter((t) => { const hit = AGENCY_TYPE_SLUGS.has(t.slug); if (hit) removed.push(`objectType ${t.slug}`); return !hit })
-  }
-  if (Array.isArray(bundle.objectRelations)) {
-    bundle.objectRelations = bundle.objectRelations.filter((r) => !JSON.stringify(r).includes('client_onboarding'))
-  }
-  if (Array.isArray(bundle.workflows)) {
-    bundle.workflows = bundle.workflows.filter((w) => { const hit = (w.tags || []).includes(AGENCY_TAG) || w.triggerTypeSlug === 'client_onboarding'; if (hit) removed.push(`workflow ${w.name}`); return !hit })
-  }
-  return removed
-}
-
 function summarize(bundle) {
   const n = (k) => (Array.isArray(bundle?.[k]) ? bundle[k].length : bundle?.[k] ? 'yes' : 0)
   return {
     objectTypes: (bundle.objectTypes || []).map((t) => t.slug),
     workflows: (bundle.workflows || []).map((w) => w.name),
-    contentTypes: (bundle.contentTypes || []).map((t) => t.slug ?? t.name),
+    contentTypes: (bundle.contentTypes || []).map((t) => t.contentType?.slug ?? t.slug ?? t.name),
     starterContent: bundle.starterContent?.items?.length ?? 0,
     branding: n('branding'), roles: n('roles'), variables: (bundle.variables || []).map((v) => v.name),
   }
@@ -102,46 +68,74 @@ const [cmd, ...rest] = process.argv.slice(2)
 async function main() {
   if (cmd === 'list') {
     const r = await api(`/projects/${agency}/templates`)
-    const list = r.data ?? r.templates ?? r
+    const list = r.data ?? []
+    if (!list.length) console.log('(no templates on this project yet)')
     for (const t of list) console.log(`${t.id}  ${t.name}  (${t.updatedAt})`)
     return
   }
 
   if (cmd === 'show') {
     const r = await api(`/projects/${agency}/templates/${rest[0]}`)
-    const t = r.data ?? r.template ?? r
+    const t = r.data
     console.log(JSON.stringify({ id: t.id, name: t.name, ...summarize(t.bundle || {}) }, null, 2))
+    return
+  }
+
+  if (cmd === 'delete') {
+    if (!rest[0]) throw new Error('usage: delete <templateId>')
+    await api(`/projects/${agency}/templates/${rest[0]}`, { method: 'DELETE' })
+    console.log(`deleted ${rest[0]}`)
     return
   }
 
   if (cmd === 'snapshot') {
     const name = rest[0] || `Septic template ${new Date().toISOString().slice(0, 10)}`
     console.log(`snapshot: capturing ${agency} as "${name}"`)
+
+    // Whatever the Branding page holds right now for Primary / Emergency must
+    // become {{primaryHex}} / {{accentHex}} too, or a client stamped from the
+    // template inherits the agency demo's colors as literals.
+    const tokens = [...TOKENS]
+    const live = (await api(`/projects/${agency}/branding`).catch(() => null))?.branding
+    for (const [colorName, v] of [['Primary', 'primaryHex'], ['Emergency', 'accentHex']]) {
+      const hex = live?.colors?.find((c) => c.name.toLowerCase() === colorName.toLowerCase())?.hex
+      if (hex && !tokens.some((t) => t.find.toLowerCase() === hex.toLowerCase())) {
+        tokens.push({ find: hex, var: v })
+        console.log(`  tokenize Branding ${colorName} ${hex} → {{${v}}}`)
+      }
+    }
+
+    // 1. Capture everything. No server-side `tokenize`: see template-tokens.mjs.
     const snap = await api(`/projects/${agency}/snapshot`, {
       method: 'POST',
       body: JSON.stringify({
         name,
         description: 'Septic company site + CRM + text-back automations. Stamped per client with {{variables}}.',
         include: { roles: true, sidebar: true, workflows: true, objectTypes: true, objectRelations: true, crmConfig: true, spineFields: true, contentTypes: true, starterContent: true, branding: true, projectContext: true, agents: true },
-        tokenize: TOKENS.map(({ find, var: v }) => ({ find, var: v })),
-        variables: [...TOKENS.map(({ var: v, label, example, required }) => ({ name: v, label, type: 'string', example, required: Boolean(required) })), ...EXTRA_VARIABLES.map((x) => ({ ...x, type: 'string' }))],
+        variables: variableDeclarations(TOKENS),
       }),
     })
-    const template = snap.data?.template ?? snap.template
-    for (const w of snap.data?.warnings ?? []) console.log(`  warning  ${w}`)
+    const template = snap.data.template
+    for (const w of snap.data.warnings ?? []) console.log(`  warning  ${w}`)
     console.log(`  created  ${template.id}`)
 
-    // Fetch the full bundle, strip agency entities, patch it back.
-    const full = await api(`/projects/${agency}/templates/${template.id}`)
-    const bundle = (full.data ?? full.template ?? full).bundle
+    // 2. Tokenize + strip locally, patch the bundle back.
+    const { bundle, hits } = tokenizeBundle(template.bundle, tokens)
     const removed = stripAgency(bundle)
-    if (removed.length) {
-      await api(`/projects/${agency}/templates/${template.id}`, { method: 'PATCH', body: JSON.stringify({ bundle }) })
-      for (const r of removed) console.log(`  removed  ${r}`)
-    }
-    console.log(JSON.stringify(summarize(bundle), null, 2))
+    await api(`/projects/${agency}/templates/${template.id}`, { method: 'PATCH', body: JSON.stringify({ bundle }) })
+    for (const r of removed) console.log(`  removed  ${r}`)
+    console.log(`  tokens   ${Object.entries(hits).map(([k, v]) => `${k}×${v}`).join('  ') || 'none hit'}`)
+
+    // 3. Read it back and prove the patch stuck.
+    const saved = (await api(`/projects/${agency}/templates/${template.id}`)).data.bundle
+    const savedItems = saved.starterContent?.items ?? []
+    const badDates = savedItems.filter((i) => i.publishedAt && Number.isNaN(Date.parse(i.publishedAt))).length
+    const placeholders = (JSON.stringify(saved).match(/\{\{[a-zA-Z_]\w*\}\}/g) || []).length
+    console.log(`  verified ${savedItems.length} starter items, ${badDates} bad dates, ${placeholders} placeholders in the stored bundle`)
+    for (const r of residue(saved)) console.log(`  LEFTOVER ${r.path}: ${r.value}`)
+    console.log(JSON.stringify(summarize(saved), null, 2))
     console.log(`\nSAPT_TEMPLATE_ID=${template.id}   ← put this in .env.local`)
-    fs.writeFileSync(path.join(ROOT, 'onboarding', 'template-bundle.json'), JSON.stringify(bundle, null, 2) + '\n')
+    fs.writeFileSync(path.join(ROOT, 'onboarding', 'template-bundle.json'), JSON.stringify(saved, null, 2) + '\n')
     console.log('  wrote    onboarding/template-bundle.json (local copy for inspection, gitignored)')
     return
   }
@@ -154,16 +148,16 @@ async function main() {
     if (vi >= 0) for (const kv of rest.slice(vi + 1)) { const [k, ...v] = kv.split('='); variableValues[k] = v.join('=') }
     const r = await api(`/projects/${agency}/templates/${templateId}/apply`, { method: 'POST', body: JSON.stringify({ name: clientName, variableValues }) })
     const d = r.data
-    console.log(`project ${d.project.id} (${d.project.slug}) — ${d.templateApply?.status}`)
+    console.log(`project ${d.project.id} (${d.project.slug}) — ${d.templateApply?.status}${d.templateApply?.error ? ': ' + d.templateApply.error : ''}`)
     const rep = d.templateApply?.report
     if (rep) {
-      console.log(`  applied ${rep.appliedCount}; failures ${rep.failures.length}; missing variables ${rep.missingVariables.join(', ') || 'none'}`)
+      console.log(`  applied ${rep.appliedCount}; skipped ${rep.skipped.length}; failures ${rep.failures.length}; missing variables ${rep.missingVariables.join(', ') || 'none'}`)
       for (const f of rep.failures) console.log(`  FAIL ${f.entity} ${f.name}: ${f.error}`)
     }
     return
   }
 
-  console.error('usage: pnpm sapt-template <list|snapshot [name]|show <id>|apply <id> "<name>" [--vars k=v]>')
+  console.error('usage: pnpm sapt-template <list|snapshot [name]|show <id>|apply <id> "<name>" [--vars k=v]|delete <id>>')
   process.exit(2)
 }
 

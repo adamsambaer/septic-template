@@ -29,6 +29,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { mapCms } from './lib/cms-map.mjs'
 import { onboardingToBundle } from './lib/onboard-map.mjs'
+import { needsRebind, rebindActions } from './lib/rebind.mjs'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const AGENCY_DEFAULT = 'e07c4bff-37e8-46e3-96eb-f1c0c13b095c'
@@ -75,6 +76,29 @@ async function download(url, dir) {
   const file = `${path.basename(new URL(url).pathname, ext).replace(/[^a-z0-9-]/gi, '-').slice(0, 40)}-${createHash('sha1').update(url).digest('hex').slice(0, 8)}${ext}`
   fs.writeFileSync(path.join(dir, file), buf)
   return `/img/cms/${file}`
+}
+
+/**
+ * Sapt scrubs every workflow HTTP action (url, headers, body) from a template
+ * and leaves `__sapt_template_rebind_required__` markers behind. Copy the real
+ * values from the agency project's workflow of the same name, filling
+ * {{owner_mobile}} / {{from_number}} where known. See scripts/lib/rebind.mjs.
+ */
+async function rebindWorkflows(projectId, vars) {
+  const src = (await api(`/projects/${agency}/workflows`)).workflows ?? []
+  const dst = (await api(`/projects/${projectId}/workflows`)).workflows ?? []
+  let patched = 0
+  for (const w of dst) {
+    if (!needsRebind(w.actions)) continue
+    const from = src.find((x) => x.name === w.name)
+    const { actions, bound, unresolved } = rebindActions(w.actions, from?.actions ?? [], vars)
+    if (bound.length) {
+      await api(`/projects/${projectId}/workflows/${w.id}`, { method: 'PATCH', body: JSON.stringify({ actions }) })
+      patched++
+    }
+    if (unresolved.length) console.log(`  check     workflow "${w.name}": could not re-bind ${unresolved.join(', ')}`)
+  }
+  console.log(`  workflows ${patched} of ${dst.length} re-bound with the Telnyx actions (all stay drafts until their number is connected)`)
 }
 
 async function main() {
@@ -132,15 +156,22 @@ async function main() {
           email: s.email, siteUrl: config.siteUrl || '', street: s.addressStreet, zip: s.addressZip,
           primaryHex: bundle.branding.colors[0].hex, accentHex: bundle.branding.colors[1].hex,
           owner_mobile: bundle.ownerMobile || '',
+          google_review_url: s.trustGoogleReviewUrl || '',
         }
         const r = await api(`/projects/${agency}/templates/${templateId}/apply`, { method: 'POST', body: JSON.stringify({ name: s.companyName, variableValues }) })
         projectId = r.data.project.id
         const rep = r.data.templateApply?.report
-        console.log(`  project   created ${projectId} (${r.data.project.slug}) from template: ${r.data.templateApply?.status}`)
+        console.log(`  project   created ${projectId} (${r.data.project.slug}) from template: ${r.data.templateApply?.status}${r.data.templateApply?.error ? ' ' + r.data.templateApply.error : ''}`)
         if (rep) {
+          console.log(`  applied   ${rep.appliedCount} entities; skipped ${rep.skipped?.length ?? 0}; failures ${rep.failures?.length ?? 0}`)
           if (rep.missingVariables?.length) console.log(`  check     template variables left unfilled: ${rep.missingVariables.join(', ')}`)
           for (const f of rep.failures ?? []) console.log(`  FAIL      ${f.entity} ${f.name}: ${f.error}`)
         }
+        await rebindWorkflows(projectId, variableValues)
+        // Read the stamped CMS back: proves the variables landed and that this key can see the new project.
+        const stamped = await api(`/projects/${projectId}/cms/content/site-settings?status=published`).catch((e) => ({ error: e.message }))
+        const c = stamped?.items?.[0]?.content
+        console.log(`  cms       ${c ? `stamped "${c.companyName}" ${c.phoneNumber}` : `could not read the new project back (${stamped?.error ?? 'no items'})`}`)
       } else {
         console.log('  project   no SAPT_TEMPLATE_ID, creating a bare sub-project (run `pnpm sapt-template snapshot` to fix this for next time)')
         const body = {

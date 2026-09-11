@@ -20,14 +20,22 @@ const run = (script) => spawnSync(process.execPath, [path.join(ROOT, 'scripts', 
 run('ensure-generated.mjs')
 
 // .env.local is read by pull-cms itself; here we only need to know whether a key exists.
+// Hosted builds (Cloudflare Workers Builds, GitHub Actions) always pull when a key is present.
+// A local build pulls only when asked (SAPT_PULL=1): the template repo carries the agency key
+// in .env.local, and pulling the demo project over the template's empty snapshot on every
+// `pnpm verify` would keep dirtying the repo.
 const envLocal = path.join(ROOT, '.env.local')
 const localHasKey = fs.existsSync(envLocal) && /^\s*SAPT_API_KEY\s*=\s*\S/m.test(fs.readFileSync(envLocal, 'utf8'))
-if (process.env.SAPT_API_KEY || localHasKey) {
+const hosted = Boolean(process.env.CI || process.env.WORKERS_CI || process.env.CF_PAGES)
+const hasKey = Boolean(process.env.SAPT_API_KEY || localHasKey)
+if (hasKey && (hosted || process.env.SAPT_PULL === '1')) {
   const r = run('pull-cms.mjs')
   if (r.status !== 0) {
     console.error('prebuild: pull failed and a key was provided, refusing to build stale content')
     process.exit(r.status ?? 1)
   }
+} else if (hasKey) {
+  console.log('prebuild: local build, not pulling (set SAPT_PULL=1 to pull from Sapt first)')
 } else {
   console.log('prebuild: no SAPT_API_KEY, building from the committed snapshot')
 }
