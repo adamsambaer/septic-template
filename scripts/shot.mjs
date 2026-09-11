@@ -6,7 +6,7 @@
 // scroll to a selector, hover a selector, then capture.
 //
 // usage: node scripts/shot.mjs <url> <out.png> [--width N] [--height N] [--mobile]
-//        [--scroll "css"] [--hover "css"] [--full] [--wait ms]
+//        [--scroll "css"] [--hover "css"] [--click "css"] [--full] [--wait ms]
 import { spawn } from 'node:child_process'
 import fs from 'node:fs'
 import os from 'node:os'
@@ -18,7 +18,7 @@ if (!url || !out) {
   console.error('usage: node scripts/shot.mjs <url> <out.png> [--width N] [--height N] [--mobile] [--scroll css] [--hover css] [--full] [--wait ms]')
   process.exit(2)
 }
-const opt = { width: 1440, height: 1000, mobile: false, scroll: '', hover: '', full: false, wait: 1200 }
+const opt = { width: 1440, height: 1000, mobile: false, scroll: '', hover: '', click: '', full: false, wait: 1200 }
 for (let i = 0; i < rest.length; i++) {
   const k = rest[i]
   if (k === '--mobile') opt.mobile = true
@@ -75,6 +75,14 @@ await sleep(opt.wait)
 if (opt.scroll) {
   await evaluate(`document.querySelector(${JSON.stringify(opt.scroll)})?.scrollIntoView({ block: 'start' })`)
   await sleep(400)
+}
+if (opt.click) {
+  const box = await evaluate(`(() => { const r = document.querySelector(${JSON.stringify(opt.click)})?.getBoundingClientRect(); return r ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : null })()`)
+  if (!box) { console.error('click target not found'); process.exit(1) }
+  await send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: box.x, y: box.y })
+  await send('Input.dispatchMouseEvent', { type: 'mousePressed', x: box.x, y: box.y, button: 'left', clickCount: 1 })
+  await send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: box.x, y: box.y, button: 'left', clickCount: 1 })
+  await sleep(900)
 }
 if (opt.hover) {
   const box = await evaluate(`(() => { const r = document.querySelector(${JSON.stringify(opt.hover)})?.getBoundingClientRect(); return r ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : null })()`)

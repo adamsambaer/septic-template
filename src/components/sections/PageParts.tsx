@@ -4,8 +4,8 @@ import { QuoteForm } from '@/components/QuoteForm'
 import { siteConfig } from '@/config/site-config'
 import { t } from '@/lib/copy'
 import { cn } from '@/lib/utils'
-import { ArrowUpRight, ChevronRight, MapPin, Minus, Plus, Star } from 'lucide-react'
-import { useState } from 'react'
+import { ArrowUpRight, ChevronLeft, ChevronRight, MapPin, Minus, Plus, Star } from 'lucide-react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 
 /**
@@ -296,7 +296,7 @@ function RatingTile() {
 function ReviewCard({ review, large = false }: { review: (typeof siteConfig.reviews)[number]; large?: boolean }) {
   const { copy } = siteConfig
   return (
-    <figure className={cn('flex flex-col border border-border bg-surface', large ? 'p-8 sm:p-10' : 'p-7')}>
+    <figure className={cn('flex h-full flex-col border border-border bg-surface', large ? 'p-8 sm:p-10' : 'p-7')}>
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
           <span className="flex h-11 w-11 shrink-0 items-center justify-center bg-text text-sm font-extrabold tracking-wide text-white" aria-hidden="true">
@@ -331,7 +331,99 @@ function ReviewCard({ review, large = false }: { review: (typeof siteConfig.revi
   )
 }
 
-export function Reviews({ compact = false }: { compact?: boolean }) {
+/**
+ * Review slider.
+ *
+ * A native scroll-snap track, so it is smooth on every device, swipeable on
+ * phones, and needs no library. Two cards show at a time on desktop with the
+ * next one peeking, which is the cue that it slides. Square arrow controls and
+ * a counter sit above the track. It advances on its own every few seconds,
+ * pauses while hovered or focused, and stays put for anyone who prefers
+ * reduced motion.
+ */
+function ReviewSlider({ reviews }: { reviews: (typeof siteConfig.reviews) }) {
+  const track = useRef<HTMLUListElement>(null)
+  const [index, setIndex] = useState(0)
+  const [paused, setPaused] = useState(false)
+  const count = reviews.length
+
+  const step = useCallback(() => {
+    const el = track.current
+    if (!el || !el.firstElementChild) return 0
+    const card = el.firstElementChild as HTMLElement
+    return card.offsetWidth + 16 // gap-4
+  }, [])
+
+  const goTo = useCallback((i: number) => {
+    const el = track.current
+    if (!el) return
+    const next = ((i % count) + count) % count
+    el.scrollTo({ left: next * step(), behavior: 'smooth' })
+  }, [count, step])
+
+  // Keep the counter honest when the user swipes.
+  useEffect(() => {
+    const el = track.current
+    if (!el) return
+    const onScroll = () => setIndex(Math.round(el.scrollLeft / Math.max(1, step())))
+    el.addEventListener('scroll', onScroll, { passive: true })
+    return () => el.removeEventListener('scroll', onScroll)
+  }, [step])
+
+  // Auto-advance, politely.
+  useEffect(() => {
+    if (paused || count < 2) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const id = window.setInterval(() => goTo(index + 1), 6000)
+    return () => window.clearInterval(id)
+  }, [paused, count, index, goTo])
+
+  const atStart = index <= 0
+  const atEnd = index >= count - 1
+  const btn = 'flex h-11 w-11 items-center justify-center border-2 border-text text-text transition-colors hover:bg-text hover:text-white disabled:cursor-default disabled:opacity-25 disabled:hover:bg-transparent disabled:hover:text-text'
+
+  return (
+    <div
+      className="flex min-w-0 flex-col"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocusCapture={() => setPaused(true)}
+      onBlurCapture={() => setPaused(false)}
+      aria-roledescription="carousel"
+    >
+      <div className="mb-4 flex items-center justify-between">
+        <span className="text-xs font-bold uppercase tracking-[0.16em] text-text-muted tabular-nums">
+          {String(index + 1).padStart(2, '0')} / {String(count).padStart(2, '0')}
+        </span>
+        <div className="flex gap-2">
+          <button type="button" onClick={() => goTo(index - 1)} disabled={atStart} aria-label="Previous review" className={btn}>
+            <ChevronLeft className="h-5 w-5" strokeWidth={2.5} />
+          </button>
+          <button type="button" onClick={() => goTo(index + 1)} disabled={atEnd} aria-label="Next review" className={btn}>
+            <ChevronRight className="h-5 w-5" strokeWidth={2.5} />
+          </button>
+        </div>
+      </div>
+
+      <ul
+        ref={track}
+        className="flex flex-1 snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        {reviews.map((r, i) => (
+          <li
+            key={`${r.name}-${r.city}`}
+            className="flex w-[88%] shrink-0 snap-start md:w-[calc(50%-8px)]"
+            aria-hidden={Math.abs(i - index) > 1}
+          >
+            <ReviewCard review={r} />
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+export function Reviews() {
   const { reviews, trust, copy } = siteConfig
   const c = copy.reviewsSection
   if (reviews.length === 0 && trust.googleReviewCount === 0) return null
@@ -340,11 +432,9 @@ export function Reviews({ compact = false }: { compact?: boolean }) {
     <section id="reviews" className="bg-bg py-20 lg:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHead eyebrow={c.eyebrow} title={c.title} accent={c.accent} />
-        <div className={cn('mt-10 grid gap-4', compact ? 'sm:grid-cols-3' : 'sm:grid-cols-2 lg:grid-cols-4')}>
-          {!compact && trust.googleReviewCount > 0 && <RatingTile />}
-          {reviews.map((r) => (
-            <ReviewCard key={`${r.name}-${r.city}`} review={r} />
-          ))}
+        <div className="mt-10 grid gap-4 lg:grid-cols-[minmax(260px,0.28fr)_1fr] lg:items-stretch">
+          {trust.googleReviewCount > 0 && <RatingTile />}
+          {reviews.length > 0 && <ReviewSlider reviews={reviews} />}
         </div>
       </div>
     </section>
