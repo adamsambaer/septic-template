@@ -352,9 +352,9 @@ export const defaults = {
 
   // ── Reviews (Sapt: 7 · Reviews). DEMO, invented. Never ship invented reviews. ─
   reviews: [
-    { name: 'Marisol R.', city: 'Plantation', service: 'Emergency pump-out', rating: 5, text: 'Called at nine at night with the downstairs bathroom backing up. Someone actually answered and a truck was here before eleven. Priced exactly what they said on the phone.' },
-    { name: 'Dave K.', city: 'Coral Springs', service: 'Drain field replacement', rating: 5, text: 'Two other companies told me I needed a whole new system. These guys checked properly and replaced the field only. Saved me thousands and pulled the permits themselves.' },
-    { name: 'Angela T.', city: 'Pompano Beach', service: 'Real estate inspection', rating: 5, text: 'Needed a septic cert on a tight closing date. Booked me in two days and had the paperwork to my lender the same afternoon.' },
+    { name: 'Marisol R.', city: 'Plantation', service: 'Emergency pump-out', rating: 5, date: 'August 2026', text: 'Called at nine at night with the downstairs bathroom backing up. Someone actually answered and a truck was here before eleven. Priced exactly what they said on the phone.' },
+    { name: 'Dave K.', city: 'Coral Springs', service: 'Drain field replacement', rating: 5, date: 'June 2026', text: 'Two other companies told me I needed a whole new system. These guys checked properly and replaced the field only. Saved me thousands and pulled the permits themselves.' },
+    { name: 'Angela T.', city: 'Pompano Beach', service: 'Real estate inspection', rating: 5, date: 'May 2026', text: 'Needed a septic cert on a tight closing date. Booked me in two days and had the paperwork to my lender the same afternoon.' },
   ],
 
   // ── Every fixed string on the site (Sapt: 8 · Copy & labels) ─────────────
@@ -401,7 +401,11 @@ export const defaults = {
       learnMore: 'Learn more',
     },
     aboutSection: { eyebrow: "Who you're calling", title: 'Why homeowners call', yearsLabel: 'Years in South Florida', googleReviews: 'Google reviews', insured: 'Licensed & insured' },
-    reviewsSection: { eyebrow: 'Reviews', title: 'What neighbours', accent: 'actually say', rated: 'Rated {rating} across {count} Google reviews.', readAll: 'Read all', googleReviews: 'Google reviews', localTitle: 'From a neighbour in' },
+    reviewsSection: {
+      eyebrow: 'Reviews', title: 'What neighbours', accent: 'actually say',
+      rated: 'Rated {rating} across {count} Google reviews.', basedOn: 'Based on {count} reviews', readAll: 'See all on Google',
+      googleReviews: 'Google reviews', postedOn: 'Posted on Google', localTitle: 'From a neighbour in',
+    },
     coverage: { eyebrow: 'Service area', title: 'Serving', intro: '{count} cities, same-day service across {counties}. Tap your city for what we do there.', allAreas: 'All areas we serve' },
     ctaBand: {
       eyebrow: 'Talk to a real person',

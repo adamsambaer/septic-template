@@ -4,7 +4,7 @@ import { QuoteForm } from '@/components/QuoteForm'
 import { siteConfig } from '@/config/site-config'
 import { t } from '@/lib/copy'
 import { cn } from '@/lib/utils'
-import { ArrowUpRight, ChevronRight, MapPin, Minus, Plus, Quote, Star } from 'lucide-react'
+import { ArrowUpRight, ChevronRight, MapPin, Minus, Plus, Star } from 'lucide-react'
 import { useState } from 'react'
 import Link from 'next/link'
 
@@ -234,30 +234,57 @@ export function Faq({
 
 /* ── Reviews ────────────────────────────────────────────────────────────── */
 
-/** The brand-colored rating block. The number is the proof, so it gets its own tile. */
-function RatingTile() {
-  const { trust, copy } = siteConfig
+/** The Google "G". Reviews come from Google, so the section says so. */
+function GoogleMark({ className }: { className?: string }) {
   return (
-    <div className="flex flex-col justify-between bg-primary-500 p-7 text-white">
-      <Quote className="h-8 w-8 fill-white/20 text-white/20" />
-      <div>
-        <span className="block text-6xl font-extrabold leading-none tabular-nums">{trust.googleRating}</span>
-        <div className="mt-3 flex gap-0.5">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Star key={i} className="h-4 w-4 fill-white text-white" />
-          ))}
-        </div>
-        <span className="mt-3 block text-xs font-bold uppercase tracking-[0.16em] text-white/85">
-          {trust.googleReviewCount} {copy.reviewsSection.googleReviews}
-        </span>
+    <svg viewBox="0 0 48 48" aria-label="Google" className={className}>
+      <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+      <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+      <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+      <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+    </svg>
+  )
+}
+
+/**
+ * Five stars filled to the exact rating. Two rows: a muted base row and a
+ * filled row clipped to rating/5, so 4.8 reads as 4.8, not as five.
+ */
+function Stars({ rating, size = 'h-4 w-4', muted = 'text-black/15', filled = 'text-primary-500' }: { rating: number; size?: string; muted?: string; filled?: string }) {
+  const pct = `${Math.max(0, Math.min(5, rating)) * 20}%`
+  const row = (cls: string) => Array.from({ length: 5 }).map((_, i) => <Star key={i} className={cn(size, 'shrink-0 fill-current', cls)} strokeWidth={0} />)
+  return (
+    <span className="relative inline-flex" aria-label={`${rating} out of 5`}>
+      <span className="flex gap-0.5">{row(muted)}</span>
+      <span className="absolute inset-y-0 left-0 flex gap-0.5 overflow-hidden" style={{ width: pct }}>{row(filled)}</span>
+    </span>
+  )
+}
+
+const initials = (name: string) => name.split(/\s+/).map((w) => w[0]).filter(Boolean).slice(0, 2).join('').toUpperCase()
+
+/** Dark summary tile. The number is the proof, so it gets its own block. */
+function RatingTile() {
+  const { trust, dark, copy } = siteConfig
+  const c = copy.reviewsSection
+  return (
+    <div className="flex flex-col justify-between p-7 text-white" style={{ backgroundColor: dark.base }}>
+      <div className="flex items-center gap-2.5">
+        <GoogleMark className="h-5 w-5" />
+        <span className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-white/70">{c.googleReviews}</span>
+      </div>
+      <div className="mt-10">
+        <span className="block text-6xl font-extrabold leading-none tabular-nums">{trust.googleRating.toFixed(1)}</span>
+        <div className="mt-4"><Stars rating={trust.googleRating} size="h-5 w-5" muted="text-white/20" /></div>
+        <span className="mt-3 block text-sm text-white/65">{t(c.basedOn)}</span>
         {trust.googleReviewUrl && (
           <a
             href={trust.googleReviewUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-5 inline-flex items-center gap-1.5 border-b-2 border-white/60 pb-0.5 text-xs font-extrabold uppercase tracking-[0.14em] hover:border-white"
+            className="mt-7 inline-flex items-center gap-2 bg-primary-500 px-4 py-3 text-[11px] font-extrabold uppercase tracking-[0.14em] text-white transition-colors hover:bg-primary-600"
           >
-            {copy.reviewsSection.readAll}
+            {c.readAll}
             <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={2.5} />
           </a>
         )}
@@ -267,25 +294,39 @@ function RatingTile() {
 }
 
 function ReviewCard({ review, large = false }: { review: (typeof siteConfig.reviews)[number]; large?: boolean }) {
+  const { copy } = siteConfig
   return (
-    <figure className={cn('relative flex flex-col border-2 border-border-light', large ? 'justify-between bg-bg p-8 sm:p-10' : 'bg-surface p-7')}>
-      <Quote aria-hidden="true" className={cn('absolute fill-primary-100 text-primary-100', large ? 'right-6 top-6 h-12 w-12' : 'right-5 top-5 h-10 w-10')} />
-      <div>
-        <div className="flex gap-0.5">
-          {Array.from({ length: review.rating }).map((_, i) => (
-            <Star key={i} className="h-4 w-4 fill-primary-500 text-primary-500" />
-          ))}
+    <figure className={cn('flex flex-col border border-border bg-surface', large ? 'p-8 sm:p-10' : 'p-7')}>
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center bg-text text-sm font-extrabold tracking-wide text-white" aria-hidden="true">
+            {initials(review.name)}
+          </span>
+          <div className="min-w-0">
+            <span className="block text-sm font-extrabold uppercase tracking-tight text-text">{review.name}</span>
+            <span className="block text-xs text-text-muted">
+              {review.city}
+              {review.date && ` · ${review.date}`}
+            </span>
+          </div>
         </div>
-        <blockquote className={cn('leading-relaxed text-text', large ? 'mt-5 max-w-3xl text-lg sm:text-xl' : 'mt-4 flex-1 text-sm')}>
-          {review.text}
-        </blockquote>
+        <GoogleMark className="h-5 w-5 shrink-0" />
       </div>
-      <figcaption className={cn('border-t-2 border-border-light', large ? 'mt-8 pt-5' : 'mt-5 pt-4')}>
-        <span className="block text-sm font-extrabold uppercase tracking-tight text-text">{review.name}</span>
-        <span className="mt-0.5 block text-xs text-text-muted">
-          {review.service} · {review.city}
-        </span>
-      </figcaption>
+
+      <div className="mt-5 flex items-center gap-3">
+        <Stars rating={review.rating} />
+        <span className="text-xs text-text-muted">{review.service}</span>
+      </div>
+
+      <blockquote className={cn('mt-3 leading-relaxed text-text', large ? 'max-w-3xl text-lg sm:text-xl' : 'text-[15px]')}>
+        {review.text}
+      </blockquote>
+
+      {large && (
+        <figcaption className="mt-6 text-[11px] font-bold uppercase tracking-[0.14em] text-text-muted">
+          {copy.reviewsSection.postedOn}
+        </figcaption>
+      )}
     </figure>
   )
 }
@@ -298,7 +339,7 @@ export function Reviews({ compact = false }: { compact?: boolean }) {
   return (
     <section id="reviews" className="bg-bg py-20 lg:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <SectionHead eyebrow={c.eyebrow} title={c.title} accent={c.accent} intro={trust.googleReviewCount > 0 ? t(c.rated) : undefined} />
+        <SectionHead eyebrow={c.eyebrow} title={c.title} accent={c.accent} />
         <div className={cn('mt-10 grid gap-4', compact ? 'sm:grid-cols-3' : 'sm:grid-cols-2 lg:grid-cols-4')}>
           {!compact && trust.googleReviewCount > 0 && <RatingTile />}
           {reviews.map((r) => (

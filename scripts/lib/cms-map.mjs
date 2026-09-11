@@ -197,7 +197,7 @@ export function mapCms(input) {
   out.faqs = ordered(input.faqs).map((c) => ({ q: str(c.question), a: str(c.answer) })).filter((x) => x.q)
   out.process = ordered(input.steps).map((c) => ({ title: str(c.title), body: str(c.body) })).filter((x) => x.title)
   out.reviews = ordered(input.reviews).map((c) => ({
-    name: str(c.name), city: str(c.city), service: str(c.service), rating: Math.min(5, Math.max(1, num(c.rating, 5))), text: str(c.text),
+    name: str(c.name), city: str(c.city), service: str(c.service), rating: Math.min(5, Math.max(1, num(c.rating, 5))), date: str(c.date), text: str(c.text),
   })).filter((x) => x.text)
 
   // Services with no image fall back to the demo photo for that slug, if any.

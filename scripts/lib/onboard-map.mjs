@@ -146,7 +146,7 @@ export function onboardingToBundle(data) {
 
   // ── Reviews: only complete ones ──
   const reviews = [1, 2, 3]
-    .map((n) => ({ name: str(d[`review_${n}_name`]), city: str(d[`review_${n}_city`]), service: str(d[`review_${n}_service`]), rating: 5, text: str(d[`review_${n}_text`]) }))
+    .map((n) => ({ name: str(d[`review_${n}_name`]), city: str(d[`review_${n}_city`]), service: str(d[`review_${n}_service`]), rating: 5, date: '', text: str(d[`review_${n}_text`]) }))
     .filter((r) => r.text && r.name)
     .map((r, i) => item(r, i + 1))
   if (reviews.length === 0) notes.push('no reviews given; pull three from their Google profile')
