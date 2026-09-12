@@ -42,11 +42,16 @@
   .hero h1 { margin: 10px 0 14px; font-size: clamp(2.25rem, 8vw, 3.25rem); }
   .hero p { margin: 0; color: var(--muted); font-size: 17px; max-width: 32em; }
 
-  .card { background: var(--paper); border-radius: 16px; box-shadow: 0 0 0 1px var(--line); padding: 26px 24px; }
+  .card { background: var(--paper); border-radius: 16px; box-shadow: 0 0 0 1px var(--line); padding: 26px 24px; min-width: 0; }
   .card h2 { margin: 0 0 6px; font-family: var(--display); font-weight: 700; font-size: 1.4rem; letter-spacing: -.02em; line-height: 1.15; }
   .card > p.help { margin: 0 0 22px; color: var(--muted); font-size: 14.5px; }
 
-  .fields { display: grid; gap: 18px; }
+  /* Grid and flex children default to min-width:auto, which means "never
+     narrower than my content". One long filename then pushes the card wider
+     than the phone and shoves the whole page sideways. min-width:0 at every
+     level is what lets the ellipsis below actually do its job. */
+  .fields { display: grid; gap: 18px; min-width: 0; }
+  .fields > * { min-width: 0; }
   label.f { display: block; }
   label.f > span { display: block; margin-bottom: 7px; font: 500 14.5px/1.3 var(--sans); color: var(--ink-2); }
   label.f > span i { color: var(--accent); font-style: normal; }
@@ -59,19 +64,33 @@
   textarea { min-height: 108px; resize: vertical; }
 
   /* file pickers */
-  .drop { border: 1.5px dashed var(--line); border-radius: 12px; padding: 18px; text-align: center; background: #fff; transition: border-color .12s; }
+  .drop { border: 1.5px dashed var(--line); border-radius: 12px; padding: 18px; text-align: center; background: #fff; transition: border-color .12s; min-width: 0; }
   .drop:hover { border-color: var(--ink-3); }
   .drop input[type=file] { position: absolute; width: 1px; height: 1px; opacity: 0; }
   .drop .pick { display: inline-flex; align-items: center; gap: .5rem; border-radius: 999px; border: 2px solid var(--ink); padding: .6rem 1.1rem; font: 500 .9rem/1 var(--sans); cursor: pointer; }
   .drop .pick:hover { background: var(--ink); color: #fff; }
   .drop p { margin: 10px 0 0; font-size: 13px; color: var(--muted); }
-  .picked { margin: 12px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; text-align: left; }
-  .picked li { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--ink-2); background: var(--cream-2); border-radius: 8px; padding: 8px 10px; }
-  .picked li b { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .picked li span { margin-left: auto; color: var(--muted); font-size: 12.5px; white-space: nowrap; }
+  .picked { margin: 12px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; text-align: left; min-width: 0; }
+  .picked li { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 13.5px; color: var(--ink-2); background: var(--cream-2); border-radius: 8px; padding: 8px 10px; }
+  .picked li b { flex: 1 1 auto; min-width: 0; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .picked li span { flex: 0 0 auto; color: var(--muted); font-size: 12.5px; white-space: nowrap; }
   .ok { color: var(--green); font-weight: 600; }
+  .bad { color: var(--red); font-weight: 600; }
 
-  .choice { display: flex; gap: 12px; align-items: flex-start; border: 1.5px solid var(--line); border-radius: 12px; padding: 14px 16px; cursor: pointer; }
+  /* town picker */
+  .towns { display: grid; gap: 6px; max-height: 340px; overflow-y: auto; padding: 2px; }
+  .towns .t { display: flex; gap: 10px; align-items: center; min-width: 0; border: 1.5px solid var(--line); border-radius: 10px; padding: 9px 12px; cursor: pointer; }
+  .towns .t:hover { border-color: var(--ink-3); }
+  .towns .t input { margin: 0; width: 17px; height: 17px; accent-color: var(--ink); flex: none; }
+  .towns .t b { font: 500 14.5px/1.3 var(--sans); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .towns .t em { margin-left: auto; flex: none; font-style: normal; font-size: 12.5px; color: var(--muted); white-space: nowrap; }
+  .towns-foot { display: flex; align-items: baseline; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
+  .linkish { background: none; border: 0; padding: 0; font: 500 13.5px/1.4 var(--sans); color: var(--accent); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+  .linkish[disabled] { color: var(--muted); text-decoration: none; cursor: default; }
+  .towns-foot .hint { margin: 0; }
+
+  .choice { display: flex; gap: 12px; align-items: flex-start; min-width: 0; border: 1.5px solid var(--line); border-radius: 12px; padding: 14px 16px; cursor: pointer; }
+  .choice > span { min-width: 0; }
   .choice:hover { border-color: var(--ink-3); }
   .choice input { margin: 3px 0 0; width: 18px; height: 18px; accent-color: var(--ink); flex: none; }
   .choice b { display: block; font: 500 15px/1.35 var(--sans); }
@@ -225,9 +244,19 @@
           <small class="hint">Each one ticked becomes its own page. Leave off anything you would rather not get called about.</small>
         </div>
 
-        <label class="f"><span>Towns you cover <i>*</i></span><textarea name="cities" placeholder="Cape Coral&#10;Fort Myers&#10;Naples"></textarea><small>One per line, the ones worth driving to. Each becomes its own page, which is how people searching "septic pumping Cape Coral" find you. If you cover more than one county, put it after the town like <b>Naples (Collier County)</b>, otherwise they all land in the first one.</small></label>
+        <label class="f"><span>Your ZIP code <i>*</i></span><input type="text" name="address_zip" id="zip" inputmode="numeric" autocomplete="postal-code" maxlength="5" placeholder="33904"><small>Type it and we will list the towns around you, so you are not sitting here remembering them.</small></label>
 
-        <label class="f"><span>Counties you cover</span><input type="text" name="counties" placeholder="Lee County, Collier County"><small>Comma separated. Leave it blank and we will work them out from the towns.</small></label>
+        <div id="townsWrap" hidden>
+          <span style="display:block;margin-bottom:7px;font:500 14.5px/1.3 var(--sans);color:var(--ink-2)">Towns you cover <i style="color:var(--accent);font-style:normal">*</i></span>
+          <div class="towns" id="townsBox"></div>
+          <div class="towns-foot">
+            <button type="button" class="linkish" id="moreTowns">Show towns further out</button>
+            <span class="hint" id="townCount"></span>
+          </div>
+          <small class="hint">Each one becomes its own page. Untick anywhere you would not actually drive.</small>
+        </div>
+
+        <label class="f"><span>Anywhere we missed</span><input type="text" name="cities_extra" placeholder="Immokalee, Ave Maria"><small>Comma separated. Only if a town you cover is not in the list above.</small></label>
 
         <label class="f"><span>Years in business</span><input type="text" name="years_in_business" inputmode="numeric" placeholder="9"><small>Only if you want it on the site. We will not make one up.</small></label>
       </div>
@@ -296,7 +325,7 @@
   // silently point at the wrong card the moment a step is added or dropped.
   var mediaStep = form.querySelector('[data-step="3"]');
 
-  var LIST  = { differentiators: 1, cities: 1, counties: 1 };
+  var LIST  = { differentiators: 1 };
   var GROUP = { services_offered: 1 };
   var MAX_PHOTOS = 9;
   var uploaded = { logo_url: '', photo_urls: [] };   // filled once the files are in Sapt
@@ -312,39 +341,296 @@
   }
   function kb(n) { return n < 1024 * 1024 ? Math.round(n / 1024) + ' KB' : (n / 1024 / 1024).toFixed(1) + ' MB'; }
   function noSite() { return !site.value.trim(); }
+  function nextLabel() { return at === steps.length - 1 ? 'Send it over' : 'Next'; }
 
-  function renderPicked(input, list, uploadedUrls) {
+  // ── Towns, from one ZIP ───────────────────────────────────────────────
+  // Asking a contractor to list every town he covers is the slowest question
+  // on the form and the one he gets wrong: he forgets three and spells two
+  // differently from how anyone searches for them. One ZIP is instant, and the
+  // list that comes back is the real set of neighbours with the right county
+  // on each, which is what the town pages need.
+  //
+  // The data ships with the page, sharded on the first two digits of the ZIP,
+  // so this is one small fetch and no third-party service to be down.
+
+  var zipField  = document.getElementById('zip');
+  var townsWrap = document.getElementById('townsWrap');
+  var townsBox  = document.getElementById('townsBox');
+  var moreTowns = document.getElementById('moreTowns');
+  var townCount = document.getElementById('townCount');
+
+  var NEAR = 22, FAR = 35, TICK = 15;   // miles: shown, shown on request, pre-ticked
+  var shardCache = {};
+  var townOptions = [];                 // [{ name, county, state, miles }]
+  var townRadius = NEAR;
+  var lastZip = '';
+
+  function haversine(aLa, aLo, bLa, bLo) {
+    var R = 3958.8, rad = function (d) { return d * Math.PI / 180 };
+    var dLa = rad(bLa - aLa), dLo = rad(bLo - aLo);
+    var h = Math.sin(dLa / 2) * Math.sin(dLa / 2) +
+            Math.cos(rad(aLa)) * Math.cos(rad(bLa)) * Math.sin(dLo / 2) * Math.sin(dLo / 2);
+    return 2 * R * Math.asin(Math.sqrt(h));
+  }
+
+  function shard(zip) {
+    var k = zip.slice(0, 2);
+    if (shardCache[k]) return Promise.resolve(shardCache[k]);
+    return fetch('assets/towns/' + k + '.json')
+      .then(function (r) { if (!r.ok) throw new Error('no shard'); return r.json() })
+      .then(function (j) { shardCache[k] = j; return j });
+  }
+
+  function drawTowns() {
+    var shown = townOptions.filter(function (t) { return t.miles <= townRadius });
+    townsBox.innerHTML = '';
+    shown.forEach(function (t, i) {
+      var lab = document.createElement('label'); lab.className = 't';
+      var cb = document.createElement('input');
+      cb.type = 'checkbox'; cb.setAttribute('data-town', '1');
+      cb.value = t.name; cb.setAttribute('data-county', t.county);
+      cb.checked = t.checked;
+      cb.addEventListener('change', function () { t.checked = cb.checked; countTowns() });
+      var b = document.createElement('b'); b.textContent = t.name;
+      var em = document.createElement('em');
+      em.textContent = (t.county ? t.county + ' County · ' : '') + Math.round(t.miles) + ' mi';
+      lab.appendChild(cb); lab.appendChild(b); lab.appendChild(em);
+      townsBox.appendChild(lab);
+    });
+    moreTowns.hidden = false;
+    moreTowns.textContent = townRadius === NEAR ? 'Show towns further out' : 'Show fewer';
+    var further = townOptions.some(function (t) { return t.miles > NEAR });
+    moreTowns.disabled = !further && townRadius === NEAR;
+    countTowns();
+  }
+
+  function countTowns() {
+    var n = townOptions.filter(function (t) { return t.checked }).length;
+    townCount.textContent = n ? n + (n === 1 ? ' town selected' : ' towns selected') : 'none selected yet';
+  }
+
+  function loadTowns() {
+    var zip = zipField.value.replace(/\D/g, '').slice(0, 5);
+    if (zip.length !== 5 || zip === lastZip) return;
+    lastZip = zip;
+    townsWrap.hidden = false;
+    townsBox.innerHTML = '<p class="hint" style="margin:0">Looking up the towns around ' + zip + '…</p>';
+    shard(zip).then(function (data) {
+      var here = data.z[zip];
+      if (!here) {
+        townOptions = [];
+        townsBox.innerHTML = '<p class="hint" style="margin:0">We do not know that ZIP. Check it, or just type your towns in the box below.</p>';
+        moreTowns.hidden = true;
+        townCount.textContent = '';
+        return;
+      }
+      townRadius = NEAR;
+      townOptions = data.t.map(function (t) {
+        return { name: t[0], county: t[1], state: t[2], miles: haversine(here[0], here[1], t[3], t[4]), checked: false };
+      }).filter(function (t) { return t.miles <= FAR })
+        .sort(function (a, b) { return a.miles - b.miles });
+      townOptions.forEach(function (t) { t.checked = t.miles <= TICK });
+      drawTowns();
+      err.classList.remove('show');
+    }).catch(function () {
+      townOptions = [];
+      townsBox.innerHTML = '<p class="hint" style="margin:0">Could not load the town list. Type your towns in the box below and we will sort it out.</p>';
+      moreTowns.hidden = true;
+      townCount.textContent = '';
+    });
+  }
+
+  zipField.addEventListener('input', loadTowns);
+  zipField.addEventListener('blur', loadTowns);
+  moreTowns.addEventListener('click', function () {
+    townRadius = townRadius === NEAR ? FAR : NEAR;
+    drawTowns();
+  });
+
+  /** Ticked towns plus anything typed, each tagged with its county. */
+  function chosenTowns() {
+    var out = townOptions.filter(function (t) { return t.checked })
+      .map(function (t) { return t.county ? t.name + ' (' + t.county + ' County)' : t.name });
+    String(form.cities_extra.value || '').split(',').forEach(function (x) {
+      var v = x.trim();
+      if (v) out.push(v);
+    });
+    return out;
+  }
+
+  function chosenCounties() {
+    var seen = {}, out = [];
+    townOptions.filter(function (t) { return t.checked && t.county }).forEach(function (t) {
+      var c = t.county + ' County';
+      if (!seen[c]) { seen[c] = 1; out.push(c) }
+    });
+    return out;
+  }
+
+  // ── Pictures ──────────────────────────────────────────────────────────
+  // A phone camera writes 4000x3000 at 3-5MB. Nine of those is 40MB, which
+  // used to blow the size cap and, on cellular, crawled: every byte went up to
+  // the Worker and then again to R2. The site never needs more than about
+  // 2000px, so the browser resizes first. A 4MB photo lands around 300KB.
+  //
+  // Uploading also starts the moment a file is picked rather than on Next, so
+  // it happens while they answer the rest of the questions instead of making
+  // them watch a spinner at the end.
+
+  var MAX_EDGE = { photo: 2000, logo: 1200 };
+  var JPEG_Q = 0.82;
+  var logoJob = null;     // { name, bytes, status, url }
+  var photoJobs = [];
+
+  /** Canvas can only decode these. HEIC and SVG go up untouched. */
+  function decodable(f) { return /^image\/(png|jpe?g|webp)$/i.test(f.type || ''); }
+
+  function shrink(file, maxEdge, keepAlpha) {
+    if (!decodable(file) || typeof createImageBitmap !== 'function') return Promise.resolve(file);
+    return createImageBitmap(file, { imageOrientation: 'from-image' }).then(function (bmp) {
+      var scale = Math.min(1, maxEdge / Math.max(bmp.width, bmp.height));
+      if (scale === 1 && file.size < 700 * 1024) { bmp.close(); return file; }
+      var w = Math.max(1, Math.round(bmp.width * scale));
+      var h = Math.max(1, Math.round(bmp.height * scale));
+      var c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      c.getContext('2d').drawImage(bmp, 0, 0, w, h);
+      bmp.close();
+      var type = keepAlpha ? 'image/png' : 'image/jpeg';
+      return new Promise(function (res) {
+        c.toBlob(function (blob) {
+          // Re-encoding a small or already-optimal file can make it bigger.
+          if (!blob || blob.size >= file.size) return res(file);
+          var name = file.name.replace(/\.[^.]+$/, '') + (keepAlpha ? '.png' : '.jpg');
+          res(new File([blob], name, { type: type }));
+        }, type, keepAlpha ? undefined : JPEG_Q);
+      });
+    }).catch(function () { return file; });   // any decode failure: send the original
+  }
+
+  function drawList(list, jobs) {
     list.innerHTML = '';
-    Array.prototype.forEach.call(input.files, function (f, i) {
+    jobs.forEach(function (j) {
       var li = document.createElement('li');
-      var b = document.createElement('b'); b.textContent = f.name;
+      var b = document.createElement('b'); b.textContent = j.name;
       var s = document.createElement('span');
-      s.textContent = uploadedUrls && uploadedUrls[i] ? 'uploaded' : kb(f.size);
-      if (uploadedUrls && uploadedUrls[i]) s.className = 'ok';
+      if (j.status === 'done') { s.textContent = 'uploaded'; s.className = 'ok'; }
+      else if (j.status === 'failed') { s.textContent = 'did not send'; s.className = 'bad'; }
+      else if (j.status === 'shrinking') s.textContent = 'preparing';
+      else s.textContent = 'sending ' + kb(j.bytes);
       li.appendChild(b); li.appendChild(s); list.appendChild(li);
+    });
+  }
+
+  /**
+   * Shrink a batch, then send it as ONE request.
+   *
+   * Resizing costs about 150ms a photo. The wait is Sapt: a single upload is
+   * presign, then the PUT, then register, and those round trips dominate. Nine
+   * separate requests meant nine sets of them, so the files go together and the
+   * jobs exist from the first moment, which is what lets Next know to wait.
+   */
+  function startBatch(files, feature, maxEdge, keepAlpha, jobs, list) {
+    var mine = Array.prototype.map.call(files, function (f) {
+      var job = { name: f.name, bytes: f.size, status: 'shrinking', url: '' };
+      jobs.push(job);
+      return { file: f, job: job };
+    });
+    drawList(list, jobs);
+
+    var done = Promise.all(mine.map(function (m) {
+      return shrink(m.file, maxEdge, keepAlpha).then(function (small) {
+        m.small = small;
+        m.job.bytes = small.size;
+        m.job.status = 'sending';
+        drawList(list, jobs);
+        return small;
+      });
+    })).then(function (smalls) {
+      var fd = new FormData();
+      fd.append('feature', feature);
+      smalls.forEach(function (sm) { fd.append('file', sm, sm.name) });
+      return post(fd);
+    }).then(function (r) {
+      // The Worker returns assets in the order they were sent.
+      mine.forEach(function (m, k) {
+        var a = r.assets[k];
+        if (a) { m.job.status = 'done'; m.job.url = a.url; }
+        else m.job.status = 'failed';
+      });
+      drawList(list, jobs);
+      return mine.map(function (m) { return m.job });
+    }).catch(function (e) {
+      mine.forEach(function (m) { m.job.status = 'failed'; m.job.reason = e.message || '' });
+      drawList(list, jobs);
+      return mine.map(function (m) { return m.job });
+    });
+
+    return { jobs: mine.map(function (m) { return m.job }), p: done, reason: function () {
+      var f = mine.filter(function (m) { return m.job.reason })[0];
+      return f ? f.job.reason : '';
+    } };
+  }
+
+  function inFlight() {
+    return [logoJob].concat(photoJobs).filter(Boolean)
+      .some(function (j) { return j.status === 'shrinking' || j.status === 'sending'; });
+  }
+
+  /** Resolves once nothing is still shrinking or sending. */
+  function settled() {
+    if (!inFlight()) return Promise.resolve();
+    next.disabled = true;
+    next.textContent = 'Uploading';
+    return new Promise(function (res) {
+      var tick = setInterval(function () {
+        if (inFlight()) return;
+        clearInterval(tick);
+        next.disabled = false;
+        next.textContent = nextLabel();
+        res();
+      }, 200);
     });
   }
 
   logoFile.addEventListener('change', function () {
     uploaded.logo_url = '';
-    if (logoFile.files.length > 1) { /* single only */ }
-    renderPicked(logoFile, logoList, null);
+    logoJob = null;
+    logoList.innerHTML = '';
     err.classList.remove('show');
+    if (!logoFile.files.length) return;
+    var batch = startBatch([logoFile.files[0]], 'branding', MAX_EDGE.logo, true, [], logoList);
+    logoJob = batch.jobs[0];
+    batch.p.then(function (done) {
+      if (done[0].status === 'done') uploaded.logo_url = done[0].url;
+      else fail(batch.reason() || 'Your logo did not send. Check your signal and pick it again.');
+    });
   });
+
   photoFiles.addEventListener('change', function () {
     uploaded.photo_urls = [];
+    photoJobs = [];
+    photoList.innerHTML = '';
+    err.classList.remove('show');
+    if (!photoFiles.files.length) return;
     if (photoFiles.files.length > MAX_PHOTOS) {
-      err.textContent = 'That is more than ' + MAX_PHOTOS + ' photos. Pick your best ' + MAX_PHOTOS + ' and text us the rest later.';
-      err.classList.add('show');
+      fail('That is more than ' + MAX_PHOTOS + ' photos. Pick your best ' + MAX_PHOTOS + ' and text us the rest later.');
       photoFiles.value = '';
-      photoList.innerHTML = '';
       return;
     }
-    renderPicked(photoFiles, photoList, null);
-    err.classList.remove('show');
-    if (photoFiles.files.length) photosAi.checked = false;
+    photosAi.checked = false;
+    var batch = startBatch(photoFiles.files, 'cms', MAX_EDGE.photo, false, photoJobs, photoList);
+    batch.p.then(function (done) {
+      uploaded.photo_urls = done.filter(function (j) { return j.status === 'done' }).map(function (j) { return j.url });
+      var bad = done.filter(function (j) { return j.status === 'failed' }).length;
+      if (bad) fail(batch.reason() || (bad + ' of your photos did not send. Carry on and text us those later.'));
+    });
   });
-  photosAi.addEventListener('change', function () { if (photosAi.checked) { photoFiles.value = ''; photoList.innerHTML = ''; uploaded.photo_urls = []; } });
+
+  photosAi.addEventListener('change', function () {
+    if (!photosAi.checked) return;
+    photoFiles.value = ''; photoList.innerHTML = ''; photoJobs = []; uploaded.photo_urls = [];
+  });
 
   /** Step 3 reads differently depending on whether step 1 gave us a site. */
   function tuneMediaStep() {
@@ -373,7 +659,7 @@
     back.hidden = at === 0;
     hero.hidden = at !== 0;
     fine.hidden = at !== steps.length - 1;
-    next.textContent = at === steps.length - 1 ? 'Send it over' : 'Next';
+    next.textContent = nextLabel();
     count.textContent = 'Step ' + (at + 1) + ' of ' + steps.length;
     fill.style.width = ((at + 1) / steps.length * 100) + '%';
     err.classList.remove('show');
@@ -384,7 +670,7 @@
 
   function fail(msg) {
     err.textContent = msg; err.classList.add('show');
-    next.disabled = false; next.textContent = at === steps.length - 1 ? 'Send it over' : 'Next';
+    next.disabled = false; next.textContent = nextLabel();
   }
 
   function validate() {
@@ -397,9 +683,13 @@
         fail('Tick at least one service. Each one becomes a page, so a site with none has nothing to send people to.');
         return false;
       }
-      if (!form.cities.value.trim()) {
-        form.cities.focus();
-        fail('We need at least one town. That is how someone searching for septic work in their own town finds you.');
+      if (!/^\d{5}$/.test(zipField.value.replace(/\D/g, ''))) {
+        zipField.focus();
+        fail('We need your ZIP code. It is how we work out which towns to build pages for.');
+        return false;
+      }
+      if (!chosenTowns().length) {
+        fail('Tick at least one town. Each one becomes a page, and that is how someone searching in their own town finds you.');
         return false;
       }
     }
@@ -408,29 +698,6 @@
       return false;
     }
     return true;
-  }
-
-  /** Push whatever they picked to our Worker, which puts it in Sapt and hands back URLs. */
-  function uploadFiles() {
-    var jobs = [];
-    if (logoFile.files.length && !uploaded.logo_url) {
-      var fdL = new FormData();
-      fdL.append('feature', 'branding');
-      fdL.append('file', logoFile.files[0]);
-      jobs.push(post(fdL).then(function (r) { uploaded.logo_url = r.assets[0].url; renderPicked(logoFile, logoList, [1]); }));
-    }
-    if (photoFiles.files.length && !uploaded.photo_urls.length) {
-      var fdP = new FormData();
-      fdP.append('feature', 'cms');
-      Array.prototype.forEach.call(photoFiles.files, function (f) { fdP.append('file', f); });
-      jobs.push(post(fdP).then(function (r) {
-        uploaded.photo_urls = r.assets.map(function (a) { return a.url; });
-        renderPicked(photoFiles, photoList, uploaded.photo_urls);
-      }));
-    }
-    if (!jobs.length) return Promise.resolve();
-    next.disabled = true; next.textContent = 'Uploading';
-    return Promise.all(jobs);
   }
 
   function post(fd) {
@@ -458,7 +725,14 @@
     // Services and towns are only asked when they have no website. With one we
     // read both off it, and a half-remembered list typed here would override
     // what is actually published.
-    if (!noSite()) { delete data.services_offered; delete data.cities; delete data.counties; }
+    // Towns come from the picker, not from a form field, and carry the county
+    // the site needs on each town page.
+    delete data.cities_extra;
+    if (steps.indexOf(workStep) >= 0) {
+      data.cities = chosenTowns();
+      data.counties = chosenCounties();
+    }
+    if (!noSite()) { delete data.services_offered; delete data.cities; delete data.counties; delete data.address_zip; }
     if (data.services_offered) data.emergency_24_7 = data.services_offered.indexOf('emergency') >= 0;
     data.photos_ai = photosAi.checked;
     if (uploaded.logo_url) data.logo_url = uploaded.logo_url;
@@ -478,7 +752,10 @@
     if (!validate()) return;
 
     busy = true;
-    var go = steps[at] === mediaStep ? uploadFiles() : Promise.resolve();
+    // Pictures started uploading the moment they were picked, so by now this
+    // usually resolves immediately. It only waits when they hit Next straight
+    // after choosing a file.
+    var go = steps[at] === mediaStep ? settled() : Promise.resolve();
     go.then(function () {
       busy = false;
       next.disabled = false;
@@ -495,9 +772,10 @@
         });
     }).catch(function (e2) {
       busy = false;
-      fail(String(e2.message || '').indexOf('upload') >= 0 || String(e2.message || '').indexOf('MB') >= 0 || String(e2.message || '').indexOf('image') >= 0
-        ? e2.message + '. Try again, or skip it and text the files to us later.'
-        : 'That did not send. Try again in a minute, or text us a screenshot of this page and we will take it from there.');
+      // Pictures are handled where they are picked, so anything landing here is
+      // the record itself failing. Saying "try again" about a photo they cannot
+      // change is the advice that wastes their time.
+      fail('That did not send. Check your signal and press Send it over again. If it keeps failing, text us a screenshot of this page and we will take it from there.');
     });
   });
 

@@ -27,9 +27,13 @@
  *   npx wrangler deploy
  */
 
+// The page resizes to about 2000px before sending, so a phone photo arrives
+// around 300KB rather than 4MB. These are a backstop against something the
+// browser could not decode (HEIC, a huge PNG), not the normal path, so they
+// are generous enough that a client who picks nine photos never sees them.
 const MAX_FILES = 10
-const MAX_BYTES = 10 * 1024 * 1024 // per file
-const MAX_TOTAL = 30 * 1024 * 1024
+const MAX_BYTES = 15 * 1024 * 1024 // per file
+const MAX_TOTAL = 60 * 1024 * 1024
 const TYPES = new Set(['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/svg+xml', 'image/heic', 'image/heif'])
 
 /**
@@ -93,10 +97,10 @@ const worker = {
     let total = 0
     for (const f of files) {
       total += f.size
-      if (f.size > MAX_BYTES) return json({ error: `${f.name} is over ${MAX_BYTES / 1024 / 1024}MB` }, 400, headers)
-      if (!TYPES.has((f.type || '').toLowerCase())) return json({ error: `${f.name} is not an image` }, 400, headers)
+      if (f.size > MAX_BYTES) return json({ error: `${f.name} is too big to send. Pick a different one, or text it to us and we will add it.` }, 400, headers)
+      if (!TYPES.has((f.type || '').toLowerCase())) return json({ error: `${f.name} is not an image we can use. JPG, PNG, WebP, HEIC or SVG.` }, 400, headers)
     }
-    if (total > MAX_TOTAL) return json({ error: 'that is more than 30MB in one go' }, 400, headers)
+    if (total > MAX_TOTAL) return json({ error: 'those photos are too large together. Send your best few now and text us the rest.' }, 400, headers)
 
     try {
       // 1. presign

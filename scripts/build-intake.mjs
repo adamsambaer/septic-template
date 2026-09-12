@@ -36,11 +36,21 @@ for (const m of page.matchAll(/(?:src|href)="\/(?!\/)/g)) {
 }
 
 fs.writeFileSync(path.join(OUT, 'index.html'), page)
-for (const f of fs.readdirSync(path.join(SRC, 'assets'))) {
-  fs.copyFileSync(path.join(SRC, 'assets', f), path.join(OUT, 'assets', f))
+copyDir(path.join(SRC, 'assets'), path.join(OUT, 'assets'))
+function copyDir(from, to) {
+  fs.mkdirSync(to, { recursive: true })
+  for (const e of fs.readdirSync(from, { withFileTypes: true })) {
+    const a = path.join(from, e.name), b = path.join(to, e.name)
+    if (e.isDirectory()) copyDir(a, b)
+    else fs.copyFileSync(a, b)
+  }
 }
 // Nothing here should ever be indexed; the form is for people we send it to.
 fs.writeFileSync(path.join(OUT, '_headers'), '/*\n  X-Robots-Tag: noindex\n')
 fs.writeFileSync(path.join(OUT, 'robots.txt'), 'User-agent: *\nDisallow: /\n')
 
-console.log(`  staged    onboarding/dist (${fs.readdirSync(path.join(OUT, 'assets')).length} assets)`)
+const towns = path.join(OUT, 'assets', 'towns')
+if (!fs.existsSync(towns) || fs.readdirSync(towns).length < 50) {
+  throw new Error('assets/towns is missing or thin; run scripts/build-zip-data.mjs first')
+}
+console.log(`  staged    onboarding/dist (${fs.readdirSync(towns).length} town shards)`)
