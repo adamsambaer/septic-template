@@ -102,6 +102,96 @@ async function rebindWorkflows(projectId, vars) {
   console.log(`  workflows ${patched} of ${dst.length} re-bound with the Telnyx actions (all stay drafts until their number is connected)`)
 }
 
+/**
+ * Give the owner a login that edits their own site and nothing else.
+ *
+ * Sapt ships only Admin (everything) and Member (read-only), so the useful
+ * middle has to be created per project. `sendEmail:false` hands back an accept
+ * link instead of mailing it, which matters because these clients answer texts
+ * and ignore email.
+ */
+async function inviteClient(projectId, email) {
+  if (!email) return console.log('  invite    no owner email on the record, skipped')
+  const role = (await api(`/projects/${projectId}/roles`, {
+    method: 'POST',
+    body: JSON.stringify({
+      name: 'Client',
+      description: 'The business owner. Can edit their own site content and upload photos. Sees nothing else.',
+      permissions: ['cms_items:read', 'cms_items:write', 'assets:manage'],
+    }),
+  })).data
+  const inv = await api(`/projects/${projectId}/invitations`, {
+    method: 'POST',
+    body: JSON.stringify({ email, projectRoleId: role.id, sendEmail: false }),
+  })
+  if (inv.acceptUrl) {
+    console.log(`  invite    text this to ${email}:`)
+    console.log(`            ${inv.acceptUrl}`)
+  } else {
+    console.log(`  invite    ${inv.action} for ${email}${inv.reason ? ` (${inv.reason})` : ''}`)
+  }
+}
+
+/**
+ * Seed the project's memory so Sapt's own AI features know who this business
+ * is from the first message, instead of writing generic septic copy.
+ * Reserved slugs: brand, icp, strategy.
+ */
+async function seedMemory(projectId, bundle, record) {
+  const s = bundle.settings
+  const d = record.data ?? {}
+  const area = (s.areaCounties ?? []).join(', ') || s.addressCity || 'their area'
+  const services = (bundle.services ?? []).map((x) => x.content?.title).filter(Boolean).join(', ')
+  const entries = [
+    {
+      slug: 'brand',
+      title: 'Brand',
+      description: `Who ${s.companyName} is and how they talk.`,
+      content: [
+        `# ${s.companyName}`,
+        s.legalName && s.legalName !== s.companyName ? `Legal entity: ${s.legalName}.` : '',
+        `Septic contractor serving ${area}. Phone ${s.phoneNumber}.`,
+        s.aboutBody ? `\n## In their words\n${s.aboutBody}` : '',
+        (d.differentiators ?? []).length ? `\n## What they promise\n${(d.differentiators ?? []).map((x) => `- ${x}`).join('\n')}` : '',
+        '\n## Voice',
+        'Plain, direct, contractor-grade. Short sentences. Never salesy, never corporate.',
+        'Never claim a licence, rating, guarantee or price that is not on record for this client.',
+      ].filter(Boolean).join('\n'),
+    },
+    {
+      slug: 'icp',
+      title: 'Who they sell to',
+      description: 'The homeowner on the other end of the phone.',
+      content: [
+        '# Customers',
+        `Homeowners and small commercial properties on septic in ${area}.`,
+        'Two moods, and they are very different:',
+        '- **Emergency.** Something is backing up or an alarm is going off. They want a truck today and a straight answer on cost. Speed beats everything.',
+        '- **Maintenance.** A pump-out is due, or a home sale needs an inspection. Price and trust matter more than speed.',
+        services ? `\nServices offered: ${services}.` : '',
+      ].filter(Boolean).join('\n'),
+    },
+    {
+      slug: 'strategy',
+      title: 'How we grow this account',
+      description: 'What the Air Acquisition package does for them.',
+      content: [
+        '# Strategy',
+        'The site exists to make the phone ring. Every page pushes a call or the quote form.',
+        'Leads land in the CRM and text the owner within seconds. Emergencies get their own alert.',
+        'Rebooking is the engine: the pump-out reminder and the reactivation sweep bring back past customers, which is cheaper than buying new ones.',
+        'Reviews are requested automatically after a completed job, which feeds both Google and the AI assistants.',
+      ].join('\n'),
+    },
+  ]
+  let ok = 0
+  for (const e of entries) {
+    try { await api(`/projects/${projectId}/memory-entries`, { method: 'POST', body: JSON.stringify(e) }); ok++ }
+    catch (err) { console.log(`  check     memory "${e.slug}" not written: ${err.message}`) }
+  }
+  console.log(`  memory    seeded ${ok}/${entries.length} entries (brand, customers, strategy)`)
+}
+
 async function main() {
   // 1. record
   let record
@@ -193,6 +283,8 @@ async function main() {
         const stamped = await api(`/projects/${projectId}/cms/content/site-settings?status=published`).catch((e) => ({ error: e.message }))
         const c = stamped?.items?.[0]?.content
         console.log(`  cms       ${c ? `stamped "${c.companyName}" ${c.phoneNumber}` : `could not read the new project back (${stamped?.error ?? 'no items'})`}`)
+        await seedMemory(projectId, bundle, record).catch((e) => console.log(`  check     memory seeding failed: ${e.message}`))
+        await inviteClient(projectId, String(record.data?.owner_email ?? '').trim()).catch((e) => console.log(`  check     client invite failed: ${e.message}`))
       } else {
         console.log('  project   no SAPT_TEMPLATE_ID, creating a bare sub-project (run `pnpm sapt-template snapshot` to fix this for next time)')
         const body = {

@@ -15,6 +15,7 @@
     "test": "vitest run",
     "verify": "npm run typecheck && npm run lint && node scripts/verify-build.mjs",
     "pull": "node scripts/pull-cms.mjs",
+    "draft": "node scripts/draft-from-site.mjs",
     "onboard": "node scripts/onboard.mjs",
     "sapt-template": "node scripts/sapt-template.mjs",
     "init-project": "tsx scripts/init-project.ts",

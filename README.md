@@ -96,6 +96,7 @@ lead texts the owner and texts the visitor back over Telnyx; nothing goes to ema
 | `pnpm dev` | Dev server on port 2001 |
 | `pnpm pull` | Snapshot the client's Sapt project into the repo |
 | `pnpm verify` | Typecheck, lint with zero warnings, production build. **The done gate.** |
+| `pnpm draft <url>` | Read a client's existing website into an intake record, so they do not have to type it. Agency tooling. |
 | `pnpm onboard <recordId> [--create-project]` | Intake record → client site (+ their Sapt project). Agency tooling. |
 | `pnpm sapt-template <list\|snapshot\|show\|apply>` | Manage the septic template in Sapt. Agency tooling. |
 | `pnpm init-project` | Stamp a per-client Worker name, brand and logo into a fresh clone. |
