@@ -40,4 +40,6 @@ if (hasKey && (hosted || process.env.SAPT_PULL === '1')) {
   console.log('prebuild: no SAPT_API_KEY, building from the committed snapshot')
 }
 
-fs.rmSync(path.join(ROOT, '.next'), { recursive: true, force: true })
+// Wipe the build's own output dir only (verify builds into .next-verify, see scripts/verify-build.mjs),
+// so a running `pnpm dev` keeps its .next.
+fs.rmSync(path.join(ROOT, process.env.NEXT_DIST_DIR || '.next'), { recursive: true, force: true })

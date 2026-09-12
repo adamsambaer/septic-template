@@ -12,7 +12,7 @@ const compat = new FlatCompat({
 const eslintConfig = [
   ...compat.extends('next/core-web-vitals', 'next/typescript'),
   {
-    ignores: ['.next/**', '.open-next/**'],
+    ignores: ['.next/**', '.next-verify/**', '.open-next/**'],
   },
   {
     // Deliberate: this site deploys to Cloudflare Workers via OpenNext, where
