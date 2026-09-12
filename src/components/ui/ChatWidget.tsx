@@ -143,7 +143,7 @@ export function ChatWidget() {
       >
         <header className="flex items-center gap-3 border-t-4 border-primary-500 p-4 text-white" style={{ backgroundColor: dark.base }}>
           {photos.logoLight ? (
-            <img src={photos.logoLight} alt={companyName} className="h-8 w-auto" />
+            <img src={photos.logoLight} alt={companyName} className={cn('h-8 w-auto', photos.logoLightKnockout && 'brightness-0 invert')} />
           ) : (
             <span className="text-sm font-extrabold uppercase">{companyName}</span>
           )}

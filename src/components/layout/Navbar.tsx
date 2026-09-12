@@ -76,11 +76,16 @@ export function Navbar() {
         <Link href="/" className="flex shrink-0 items-center" aria-label={`${companyName} ${copy.nav.home}`}>
           {photos.logo ? (
             // Two real lockups rather than a CSS filter: a filter would also
-            // flip the brand color inside the mark.
+            // flip the brand color inside the mark. A client who uploaded one
+            // logo has no second lockup, so there the filter is the only thing
+            // standing between their dark mark and an invisible header.
             <img
               src={scrolled || open ? photos.logo : photos.logoLight}
               alt={companyName}
-              className="h-8 w-auto sm:h-9"
+              className={cn(
+                'h-8 w-auto sm:h-9',
+                photos.logoLightKnockout && !scrolled && !open && 'brightness-0 invert'
+              )}
             />
           ) : (
             <span

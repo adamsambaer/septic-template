@@ -52,6 +52,11 @@ export const defaults = {
   photos: {
     logo: '/img/logo.png', // dark lockup, light backgrounds
     logoLight: '/img/logo-light.png', // light lockup, dark backgrounds
+    // Set when the light lockup is the same file as the dark one, which is
+    // what a client who uploads a single logo gives us. Their mark is usually
+    // dark, and the nav, footer, quote form and chat header all sit on dark
+    // surfaces, so it renders as a white knockout there instead of vanishing.
+    logoLightKnockout: false,
     hero: '/img/hero.webp',
     heroFocal: { desktop: '50% 50%', mobile: '32% 50%' },
     about: '/img/team.webp',

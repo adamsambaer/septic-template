@@ -1,5 +1,6 @@
 import { siteConfig } from '@/config/site-config'
 import { t } from '@/lib/copy'
+import { cn } from '@/lib/utils'
 import { Mail, MapPin, Phone } from 'lucide-react'
 import Link from 'next/link'
 
@@ -33,7 +34,7 @@ export function Footer() {
           {/* Brand */}
           <div>
             {photos.logoLight ? (
-              <img src={photos.logoLight} alt={companyName} className="h-9 w-auto" />
+              <img src={photos.logoLight} alt={companyName} className={cn('h-9 w-auto', photos.logoLightKnockout && 'brightness-0 invert')} />
             ) : (
               <span className="text-xl font-extrabold uppercase tracking-tight">{companyName}</span>
             )}

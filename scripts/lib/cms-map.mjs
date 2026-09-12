@@ -182,6 +182,10 @@ export function mapCms(input) {
   // wordmark, not a placeholder.
   photos.logo = logo
   photos.logoLight = logoLight
+  // One uploaded file in both slots means we have no real light lockup. Say so,
+  // and the dark surfaces knock it out to white rather than showing a dark mark
+  // on a dark header.
+  photos.logoLightKnockout = Boolean(logo) && logo === logoLight
   if (!logo || !logoLight) {
     notes.push('no logo on Branding or in Photos: the site sets the company name in type. Upload one to replace it.')
   }

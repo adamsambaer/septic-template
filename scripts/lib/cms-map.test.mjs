@@ -99,3 +99,25 @@ describe('mapCms', () => {
     expect(Object.keys(CHOICES.formOption)).toHaveLength(6)
   })
 })
+
+describe('single uploaded logo on dark surfaces', () => {
+  const one = { kind: 'url', url: 'https://assets.sapt.ai/p/branding/x/mark.svg' }
+
+  it('knocks the mark out to white when both slots hold the same file', () => {
+    const { config } = mapCms({ photos: { logo: one, logoLight: one }, assetBaseUrl: 'https://assets.sapt.ai' })
+    expect(config.photos.logoLightKnockout).toBe(true)
+  })
+
+  it('leaves two real lockups alone', () => {
+    const { config } = mapCms({
+      photos: { logo: one, logoLight: { kind: 'url', url: 'https://assets.sapt.ai/p/branding/x/mark-white.svg' } },
+      assetBaseUrl: 'https://assets.sapt.ai',
+    })
+    expect(config.photos.logoLightKnockout).toBe(false)
+  })
+
+  it('stays off when there is no logo at all', () => {
+    const { config } = mapCms({ photos: {}, assetBaseUrl: 'https://assets.sapt.ai' })
+    expect(config.photos.logoLightKnockout).toBe(false)
+  })
+})

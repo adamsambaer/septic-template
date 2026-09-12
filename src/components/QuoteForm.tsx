@@ -94,7 +94,7 @@ export function QuoteForm({
     return (
       <div className={panel} style={{ backgroundColor: dark.raised }}>
         <div className="p-8 text-center sm:p-10">
-          {photos.logoLight && <img src={photos.logoLight} alt={companyName} className="mx-auto mb-6 h-8 w-auto" />}
+          {photos.logoLight && <img src={photos.logoLight} alt={companyName} className={cn('mx-auto mb-6 h-8 w-auto', photos.logoLightKnockout && 'brightness-0 invert')} />}
           <CheckCircle2 className="mx-auto h-11 w-11 text-primary-500" strokeWidth={1.75} />
           <h3 className="mt-4 text-2xl font-extrabold uppercase tracking-tight">{q.successTitle}</h3>
           <p className="mt-2 text-sm text-white/65">{q.successBody}</p>
@@ -119,7 +119,7 @@ export function QuoteForm({
     <form onSubmit={handleSubmit} className={panel} style={{ backgroundColor: dark.raised }}>
       <div className="grid gap-4 p-6 sm:p-8">
         <div className="text-center">
-          {photos.logoLight && <img src={photos.logoLight} alt={companyName} className="mx-auto mb-4 h-8 w-auto" />}
+          {photos.logoLight && <img src={photos.logoLight} alt={companyName} className={cn('mx-auto mb-4 h-8 w-auto', photos.logoLightKnockout && 'brightness-0 invert')} />}
           <h3 className="text-2xl font-extrabold uppercase tracking-tight sm:text-[1.7rem]">{heading ?? q.heading}</h3>
           {q.subline && <p className="mt-1.5 text-sm text-white/60">{q.subline}</p>}
         </div>
