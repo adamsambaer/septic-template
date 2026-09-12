@@ -202,7 +202,38 @@
       <div class="note" id="mediaNote" hidden><b>Why we are asking.</b> Without a website we have nothing to start from, and a site with no logo would go out wearing someone else's. Your logo is the one thing we genuinely cannot find for you.</div>
     </section>
 
-    <section class="card" data-step="4" hidden>
+    <!--
+      Only shown when step 1 gave us no website. With one, `pnpm draft` reads
+      the services and towns straight off it. Without one nothing else in the
+      form says what they do or where, and the site would build with no service
+      pages and no town pages at all.
+    -->
+    <section class="card" data-step="4" id="workStep" hidden>
+      <h2>What you do, and where</h2>
+      <p class="help">This decides which pages your site gets. Tick everything you actually take on.</p>
+      <div class="fields">
+        <div>
+          <span style="display:block;margin-bottom:7px;font:500 14.5px/1.3 var(--sans);color:var(--ink-2)">Services you offer <i style="color:var(--accent);font-style:normal">*</i></span>
+          <div class="fields" style="gap:10px">
+            <label class="choice"><input type="checkbox" name="services_offered" value="pumping"><span><b>Septic tank pumping</b></span></label>
+            <label class="choice"><input type="checkbox" name="services_offered" value="repair"><span><b>Repairs</b></span></label>
+            <label class="choice"><input type="checkbox" name="services_offered" value="inspection"><span><b>Inspections and real estate certs</b></span></label>
+            <label class="choice"><input type="checkbox" name="services_offered" value="emergency"><span><b>Emergency callouts</b><small>Backups and overflows, same day.</small></span></label>
+            <label class="choice"><input type="checkbox" name="services_offered" value="drain_field"><span><b>Drain field work</b></span></label>
+            <label class="choice"><input type="checkbox" name="services_offered" value="install"><span><b>New system installs</b></span></label>
+          </div>
+          <small class="hint">Each one ticked becomes its own page. Leave off anything you would rather not get called about.</small>
+        </div>
+
+        <label class="f"><span>Towns you cover <i>*</i></span><textarea name="cities" placeholder="Cape Coral&#10;Fort Myers&#10;Naples"></textarea><small>One per line, the ones worth driving to. Each becomes its own page, which is how people searching "septic pumping Cape Coral" find you. If you cover more than one county, put it after the town like <b>Naples (Collier County)</b>, otherwise they all land in the first one.</small></label>
+
+        <label class="f"><span>Counties you cover</span><input type="text" name="counties" placeholder="Lee County, Collier County"><small>Comma separated. Leave it blank and we will work them out from the towns.</small></label>
+
+        <label class="f"><span>Years in business</span><input type="text" name="years_in_business" inputmode="numeric" placeholder="9"><small>Only if you want it on the site. We will not make one up.</small></label>
+      </div>
+    </section>
+
+    <section class="card" data-step="5" hidden>
       <h2>The one thing we cannot look up</h2>
       <p class="help">Everything else we can find. This we cannot.</p>
       <div class="fields">
@@ -235,7 +266,11 @@
 <script>
 (function () {
   var form  = document.getElementById('f');
-  var steps = Array.prototype.slice.call(form.querySelectorAll('[data-step]'));
+  var allSteps = Array.prototype.slice.call(form.querySelectorAll('[data-step]'));
+  // The services-and-towns step only exists for someone with no website; with
+  // one, `pnpm draft` reads both off it and asking again wastes their time. So
+  // the step list is recomputed on every move rather than fixed at load.
+  var steps = allSteps;
   var back  = document.getElementById('back');
   var next  = document.getElementById('next');
   var err   = document.getElementById('err');
@@ -256,7 +291,13 @@
   var mediaNote  = document.getElementById('mediaNote');
   var photosAi   = document.getElementById('photosAi');
 
-  var LIST = { differentiators: 1 };
+  var workStep  = document.getElementById('workStep');
+  // Identity, not index: the step list changes length, so a hard-coded 2 would
+  // silently point at the wrong card the moment a step is added or dropped.
+  var mediaStep = form.querySelector('[data-step="3"]');
+
+  var LIST  = { differentiators: 1, cities: 1, counties: 1 };
+  var GROUP = { services_offered: 1 };
   var MAX_PHOTOS = 9;
   var uploaded = { logo_url: '', photo_urls: [] };   // filled once the files are in Sapt
   var at = 0;
@@ -316,9 +357,19 @@
       : 'We will pull these off your website. Add better ones here if you would rather choose them yourself.';
   }
 
+  /** Which cards are in play right now, and keep `at` pointing at the same one. */
+  function retune() {
+    var current = steps[at];
+    steps = allSteps.filter(function (s) { return s !== workStep || noSite(); });
+    var i = steps.indexOf(current);
+    at = i >= 0 ? i : Math.min(at, steps.length - 1);
+  }
+
   function render() {
-    steps.forEach(function (s, i) { s.hidden = i !== at; });
-    if (at === 2) tuneMediaStep();
+    retune();
+    allSteps.forEach(function (s) { s.hidden = true; });
+    steps[at].hidden = false;
+    if (steps[at] === mediaStep) tuneMediaStep();
     back.hidden = at === 0;
     hero.hidden = at !== 0;
     fine.hidden = at !== steps.length - 1;
@@ -341,7 +392,18 @@
     if (missing.length) { missing[0].focus(); fail('Still needed: ' + missing.map(labelOf).join(', ')); return false; }
     var email = steps[at].querySelector('input[type=email]');
     if (email && email.value.trim() && email.value.indexOf('@') < 1) { email.focus(); fail('That email address does not look right.'); return false; }
-    if (at === 2 && noSite() && !logoFile.files.length && !uploaded.logo_url) {
+    if (steps[at] === workStep) {
+      if (!form.querySelectorAll('input[name=services_offered]:checked').length) {
+        fail('Tick at least one service. Each one becomes a page, so a site with none has nothing to send people to.');
+        return false;
+      }
+      if (!form.cities.value.trim()) {
+        form.cities.focus();
+        fail('We need at least one town. That is how someone searching for septic work in their own town finds you.');
+        return false;
+      }
+    }
+    if (steps[at] === mediaStep && noSite() && !logoFile.files.length && !uploaded.logo_url) {
       fail('We need your logo. Without a website there is nothing else to build the look from, and we will not put someone else’s logo on your site.');
       return false;
     }
@@ -387,9 +449,17 @@
       if (key === 'company_website') return;              // honeypot
       var v = String(value).trim();
       if (!v) return;
-      if (LIST[key]) data[key] = v.split(/[\n,]/).map(function (s) { return s.trim(); }).filter(Boolean);
+      // A checkbox group posts one entry per tick under the same name, so it
+      // has to accumulate; plain assignment would keep only the last service.
+      if (GROUP[key]) (data[key] = data[key] || []).push(v);
+      else if (LIST[key]) data[key] = v.split(/[\n,]/).map(function (s) { return s.trim(); }).filter(Boolean);
       else data[key] = v;
     });
+    // Services and towns are only asked when they have no website. With one we
+    // read both off it, and a half-remembered list typed here would override
+    // what is actually published.
+    if (!noSite()) { delete data.services_offered; delete data.cities; delete data.counties; }
+    if (data.services_offered) data.emergency_24_7 = data.services_offered.indexOf('emergency') >= 0;
     data.photos_ai = photosAi.checked;
     if (uploaded.logo_url) data.logo_url = uploaded.logo_url;
     if (uploaded.photo_urls.length) data.photo_urls = uploaded.photo_urls;
@@ -408,7 +478,7 @@
     if (!validate()) return;
 
     busy = true;
-    var go = at === 2 ? uploadFiles() : Promise.resolve();
+    var go = steps[at] === mediaStep ? uploadFiles() : Promise.resolve();
     go.then(function () {
       busy = false;
       next.disabled = false;
