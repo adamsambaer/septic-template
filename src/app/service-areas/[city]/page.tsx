@@ -3,12 +3,13 @@ import { CTA } from '@/components/sections'
 import { Faq, LocalReview, PageHero, SectionHead } from '@/components/sections/PageParts'
 import { siteConfig } from '@/config/site-config'
 import { t } from '@/lib/copy'
+import { JsonLd, breadcrumbNode, businessNode, faqNode, graph } from '@/lib/schema'
 import { ArrowUpRight, MapPin } from 'lucide-react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 
-const { serviceArea, services, companyName, address, trust, photos, pages, copy } = siteConfig
+const { serviceArea, services, photos, pages, copy } = siteConfig
 const c = copy.cityPage
 
 export function generateStaticParams() {
@@ -45,40 +46,24 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
   const vars = { city: place.name, county: place.county }
   const neighbours = serviceArea.cities.filter((x) => x.county === place.county && x.slug !== place.slug)
 
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'LocalBusiness',
-    name: companyName,
-    telephone: siteConfig.phoneHref.replace('tel:', ''),
-    address: {
-      '@type': 'PostalAddress',
-      streetAddress: address.street,
-      addressLocality: address.city,
-      addressRegion: address.state,
-      postalCode: address.zip,
-    },
-    areaServed: { '@type': 'City', name: place.name },
-    ...(trust.googleReviewCount > 0 && {
-      aggregateRating: { '@type': 'AggregateRating', ratingValue: trust.googleRating, reviewCount: trust.googleReviewCount },
-    }),
-  }
+  const trail = [
+    { label: copy.nav.home, href: '/' },
+    { label: copy.nav.areas, href: '/service-areas' },
+    { label: place.name },
+  ]
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <JsonLd data={graph(businessNode(), breadcrumbNode(trail), faqNode(siteConfig.faqs))} />
       <Navbar />
       <main>
         <PageHero
           eyebrow={t(c.eyebrow, vars)}
           title={t(c.title, vars)}
-          intro={t(c.intro, vars)}
+          intro={place.intro || t(c.intro, vars)}
           image={photos.hero}
           focal={photos.heroFocal.desktop}
-          trail={[
-            { label: copy.nav.home, href: '/' },
-            { label: copy.nav.areas, href: '/service-areas' },
-            { label: place.name },
-          ]}
+          trail={trail}
         />
 
         {/* Services available here: links every service page from every city page */}
@@ -102,6 +87,22 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
                     </span>
                   </Link>
                 ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Local detail. The only thing that makes this page genuinely different
+            from every other city page, so it is the field that decides whether
+            this is a real page or a doorway page. Nothing renders until the
+            client fills it in, and nothing here is invented on their behalf. */}
+        {(place.notes || place.priceNote) && (
+          <section className="bg-surface py-20 lg:py-28">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+              <SectionHead eyebrow={c.localEyebrow} title={c.localTitle} accent={place.name} />
+              <div className="mt-10 max-w-3xl">
+                {place.notes && <p className="leading-relaxed text-text-muted">{place.notes}</p>}
+                {place.priceNote && <p className="mt-5 leading-relaxed text-text-muted">{place.priceNote}</p>}
               </div>
             </div>
           </section>

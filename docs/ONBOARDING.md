@@ -69,9 +69,16 @@ form lands ─▶ pnpm onboard <id> --create-project ─▶ Deploy Button ─▶
    Verified end to end on 12 Sep 2026 with a fake client: 47 entities applied,
    0 failures, and `pnpm pull` against the new project returned their 4
    services, 4 cities, 2 reviews and colors.
-3. **Photos and logo.** The only manual step. Download from the folder they
-   shared, upload to the project's Assets and Branding, pick them in 2 · Photos
-   and on each service. Until then the demo photos show.
+3. **Photos, logo and local detail.** The manual step. Download the photos from
+   the folder they shared, upload to the project's Assets and Branding, pick
+   them in 2 · Photos and on each service. Until then the demo photos show.
+
+   Then fill **Local detail** on every published city. Two or three sentences
+   that are only true of that town, from the client, not invented. City pages
+   without it are near-identical to each other, which is the doorway pattern
+   Google suppresses. `pnpm pull` names every city that is missing it. Where a
+   real price range exists, put it on the service too. Both are covered in
+   [`AI-SEARCH.md`](AI-SEARCH.md).
 4. **Deploy.** Click the Deploy to Cloudflare button in the README. Paste the
    client's Project ID and site URL when asked. Cloudflare clones the repo into
    your GitHub, sets up Workers Builds and deploys. Then in the new repo's
@@ -104,6 +111,7 @@ no rating block without a review count, no invented reviews.
 | Where you work | Counties and one page per city. Tag cities `Naples (Collier County)` when there is more than one county. |
 | What you do | Which of the six template services get built. Emergency toggles the strip. |
 | Proof | License, insured, Google rating and count, the review link the texts send people to |
+| Listings | Google, Yelp, BBB and Facebook links. Never rendered. They go into the structured data so an assistant can confirm the site and the listings are one business. See [`AI-SEARCH.md`](AI-SEARCH.md). |
 | Brand & photos | Colors go to Branding. Logo and photos come as links to a shared folder. |
 | In your words | About body and the three reasons list |
 | Three reviews | Verbatim from Google, with name and city so city pages can pick a local one |

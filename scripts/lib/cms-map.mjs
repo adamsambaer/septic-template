@@ -124,6 +124,24 @@ export function mapCms(input) {
     }
     out.about = { headline: str(s.aboutHeadline), body: str(s.aboutBody), points: list(s.aboutPoints) }
     out.serviceArea = { headline: str(s.areaHeadline), counties: list(s.areaCounties) }
+    // Machine-readable identity. None of this renders; it is what lets an
+    // engine tie the site, the Google listing and the Yelp page together.
+    out.identity = {
+      profiles: {
+        google: str(s.profileGoogle),
+        yelp: str(s.profileYelp),
+        facebook: str(s.profileFacebook),
+        bbb: str(s.profileBbb),
+        instagram: str(s.profileInstagram),
+        angi: str(s.profileAngi),
+      },
+      openingHours: str(s.openingHours),
+      geo: { lat: num(s.geoLat), lng: num(s.geoLng) },
+      priceRange: str(s.priceRange),
+    }
+    if (!Object.values(out.identity.profiles).some(Boolean)) {
+      notes.push('identity.profiles: no Google/Yelp/Facebook links, engines cannot confirm the listings are this business')
+    }
     out.pages = {
       services: bool(s.pageServices, true),
       serviceAreas: bool(s.pageServiceAreas, true),
@@ -190,9 +208,18 @@ export function mapCms(input) {
     faqs: (Array.isArray(c.faqs) ? c.faqs : []).map((x) => ({ q: str(x?.question), a: str(x?.answer) })).filter((x) => x.q),
     image: imageUrl(c.image, assetBaseUrl),
     focal: str(c.focal) || '50% 50%',
+    // Always emitted, zeroed when unset, so a demo price can never survive the
+    // merge onto a real client's page. `from: 0` hides the cost block.
+    price: { from: num(c.priceFrom), to: num(c.priceTo), unit: str(c.priceUnit), note: str(c.priceNote) },
+    costFactors: list(c.costFactors),
   })).filter((x) => x.slug && x.title)
 
-  const cities = ordered(input.cities).map((c) => ({ name: str(c.name), slug: str(c.slug), county: str(c.county) })).filter((x) => x.slug && x.name)
+  const cities = ordered(input.cities).map((c) => ({
+    name: str(c.name), slug: str(c.slug), county: str(c.county),
+    // The anti-doorway fields. A city page with none of these filled in is the
+    // same page as every other city page with one word swapped.
+    intro: str(c.intro), notes: str(c.notes), priceNote: str(c.cityPriceNote),
+  })).filter((x) => x.slug && x.name)
   out.serviceArea = { ...(out.serviceArea ?? {}), cities }
 
   out.faqs = ordered(input.faqs).map((c) => ({ q: str(c.question), a: str(c.answer) })).filter((x) => x.q)

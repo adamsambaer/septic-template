@@ -80,9 +80,13 @@ async function listAll(typeSlug) {
   return items
 }
 
+/** Every item we touched, so the newest timestamp can become `updatedAt`. */
+const seen = []
+
 async function single(typeSlug) {
   const items = await listAll(typeSlug)
   const hit = items.find((i) => i.slug === 'default') ?? items[0]
+  if (hit) seen.push(hit)
   return hit?.content ?? null
 }
 
@@ -135,6 +139,26 @@ async function main() {
   for (const svc of config.services ?? []) {
     if (svc.image) svc.image = await localise(svc.image)
     else delete svc.image // let the merge fall back to the demo photo for this slug
+  }
+
+  // ── freshness: the newest CMS edit becomes the site's dateModified ──
+  const newest = [...seen, ...services, ...cities, ...faqs, ...steps, ...reviews]
+    .map((i) => i?.updatedAt)
+    .filter(Boolean)
+    .sort()
+    .at(-1)
+  if (newest) config.updatedAt = newest
+
+  // ── the doorway-page check ──
+  // City pages that carry no local detail are the same page with one word
+  // swapped, which is the pattern Google spent 2026 suppressing.
+  const allCities = config.serviceArea?.cities ?? []
+  const thin = allCities.filter((c) => !c.notes && !c.intro)
+  if (thin.length > 0) {
+    notes.push(
+      `${thin.length} of ${allCities.length} city pages have no local detail (${thin.slice(0, 4).map((c) => c.name).join(', ')}${thin.length > 4 ? ', …' : ''}). ` +
+        'Fill "Local detail" on those city items in Sapt, or unpublish them.'
+    )
   }
 
   fs.writeFileSync(OUT_JSON, JSON.stringify(config, null, 2) + '\n')

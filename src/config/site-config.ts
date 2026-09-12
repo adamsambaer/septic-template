@@ -162,6 +162,16 @@ export const defaults = {
       ],
       image: '/img/svc-pumpout.webp',
       focal: '50% 40%',
+      // DEMO pricing. A client's real range comes from Sapt and replaces this
+      // wholesale, so a demo number can never appear on a client's site.
+      price: { from: 325, to: 525, unit: 'per pump-out, residential tank', note: 'Covers a standard 1,000 to 1,500 gallon residential tank with an accessible lid.' },
+      costFactors: [
+        'Tank size: a 1,500 gallon tank takes longer to empty than a 1,000',
+        'How long since the last pump-out, because compacted solids take longer',
+        'Whether the lid is at grade or buried, since digging it out is labour',
+        'Truck access, and how much hose we have to run from the driveway',
+        'Whether the filter needs cleaning or replacing while we are in there',
+      ],
     },
     {
       icon: 'clipboard-check',
@@ -194,6 +204,13 @@ export const defaults = {
       ],
       image: '/img/svc-inspection.webp',
       focal: '35% 45%',
+      price: { from: 250, to: 450, unit: 'per inspection', note: 'A real-estate transfer inspection is at the top of that range because it includes the written report.' },
+      costFactors: [
+        'Whether it is a routine check or a real-estate transfer inspection',
+        'Whether the tank has to be pumped to see the baffles properly',
+        'Locating a tank that has no visible lid or riser',
+        'Aerobic systems take longer than conventional ones',
+      ],
     },
     {
       icon: 'wrench',
@@ -226,6 +243,13 @@ export const defaults = {
       ],
       image: '/img/truck.webp',
       focal: '50% 55%',
+      price: { from: 275, to: 1400, unit: 'per repair, parts and labour', note: 'A float switch is at the bottom of that range. A new effluent pump with a control panel is at the top.' },
+      costFactors: [
+        'Which part failed: a float is cheap, a pump and panel is not',
+        'How deep the tank is, because depth is labour',
+        'Whether the repair needs a county permit',
+        'Concrete work on a lid or riser, which is priced separately',
+      ],
     },
     {
       icon: 'layers',
@@ -298,10 +322,20 @@ export const defaults = {
     headline: 'Serving Broward & Palm Beach',
     counties: ['Broward County', 'Palm Beach County'],
     cities: [
-      { name: 'Fort Lauderdale', slug: 'fort-lauderdale', county: 'Broward County' },
+      // DEMO local detail. This is the field that decides whether a city page
+      // is a real page or the same page with one word swapped. Client values
+      // come from Sapt and replace this list entirely.
+      {
+        name: 'Fort Lauderdale', slug: 'fort-lauderdale', county: 'Broward County',
+        notes: 'We run two trucks out of Fort Lauderdale, so this is usually the area we reach fastest on an emergency call. Plenty of the older lots here are tight on access, and we bring the smaller truck where a driveway will not take the big one.',
+      },
       { name: 'Pompano Beach', slug: 'pompano-beach', county: 'Broward County' },
       { name: 'Coral Springs', slug: 'coral-springs', county: 'Broward County' },
-      { name: 'Davie', slug: 'davie', county: 'Broward County' },
+      {
+        name: 'Davie', slug: 'davie', county: 'Broward County',
+        notes: 'Davie properties tend to sit on larger lots with the tank a long way from anywhere a truck can park, so we carry extra hose as standard here rather than sending a second crew back out.',
+        priceNote: 'Long hose runs on the bigger lots can add to a standard pump-out. We tell you on the call, not afterwards.',
+      },
       { name: 'Plantation', slug: 'plantation', county: 'Broward County' },
       { name: 'Parkland', slug: 'parkland', county: 'Broward County' },
       { name: 'Boca Raton', slug: 'boca-raton', county: 'Palm Beach County' },
@@ -322,6 +356,38 @@ export const defaults = {
     insured: true,
     emergencyAvailable: true,
   },
+
+  // ── Machine-readable business identity (Sapt: 1 · Site settings → Identity)
+  //
+  // None of this renders. It exists so search and AI answer engines can tell
+  // that the website, the Google listing and the Yelp page are one business,
+  // which is the signal that decides whether an assistant will name the
+  // company at all. Every field is optional: a blank one is left out of the
+  // JSON-LD entirely rather than emitted empty. See src/lib/schema.ts.
+  identity: {
+    /** Profile URLs, emitted as schema.org `sameAs`. Blank ones are skipped. */
+    profiles: {
+      google: '', // the Google Business Profile / Maps link
+      yelp: '',
+      facebook: '',
+      bbb: '',
+      instagram: '',
+      angi: '',
+    },
+    /** schema.org opening-hours shorthand, e.g. "Mo-Fr 07:00-18:00, Sa 08:00-14:00". */
+    openingHours: '',
+    /** Map pin. Both must be non-zero or the block is skipped. */
+    geo: { lat: 0, lng: 0 },
+    /** "$", "$$", "$$$". Free-form is allowed but these are what engines expect. */
+    priceRange: '',
+  },
+
+  /**
+   * When the client's CMS content last changed. Written by `pnpm pull` from
+   * the newest item timestamp, so it is true rather than decorative. Emitted
+   * as `dateModified`; freshness is a moderately supported citation signal.
+   */
+  updatedAt: '',
 
   // ── About ────────────────────────────────────────────────────────────────
   about: {
@@ -474,6 +540,11 @@ export const defaults = {
       nearbyEyebrow: 'Nearby',
       nearbyTitle: 'Also serving',
       faqHeading: 'Common questions',
+      // Local detail block. Renders only when the city item in Sapt has notes
+      // filled in. This is what stops every city page being the same page with
+      // one word swapped, which is the pattern Google suppresses.
+      localEyebrow: 'Local detail',
+      localTitle: 'Septic in',
       metaTitle: 'Septic Pumping & Repair in {city}, {state} | {company}',
       metaDescription: 'Same-day septic service in {city}. Pumping, emergency callouts, inspections, drain field repair and new installs. Licensed and insured, {county}.',
     },
@@ -486,6 +557,12 @@ export const defaults = {
       relatedTitle: 'Also',
       relatedAccent: 'available',
       metaTitle: '{service} in {city} & {counties} | {company}',
+      // Cost block. Renders only when a price range is filled in for the
+      // service in Sapt, so the section does not exist until it is true.
+      costEyebrow: 'Typical cost',
+      costTitle: 'What {service} costs in',
+      costFactorsLabel: 'What moves the price',
+      costDisclaimer: 'A real number for your property comes from the call, and it does not change once we are on site.',
     },
     aboutPage: { eyebrow: 'About', metaTitle: 'About {company} | Licensed Septic Contractor, {city} {state}' },
     reviewsPage: {
@@ -524,7 +601,32 @@ export const defaults = {
   saptBaseUrl: 'https://api.sapt.ai',
 }
 
-export type SiteConfig = typeof defaults
+/** A published price range for one service. `from: 0` means "not published". */
+export type ServicePrice = { from: number; to: number; unit: string; note: string }
+
+/**
+ * The defaults above describe the demo company. These extra properties exist
+ * only in a client's Sapt CMS, so they are optional on the type rather than
+ * invented here: a price the client has not given must never be rendered.
+ */
+export type SiteConfig = Omit<typeof defaults, 'services' | 'serviceArea'> & {
+  services: ((typeof defaults)['services'][number] & {
+    /** Sapt: 3 · Services → Cost. Hidden entirely until `from` is set. */
+    price?: ServicePrice
+    /** What moves the price for this job. Renders under the range. */
+    costFactors?: string[]
+  })[]
+  serviceArea: Omit<(typeof defaults)['serviceArea'], 'cities'> & {
+    cities: ((typeof defaults)['serviceArea']['cities'][number] & {
+      /** Replaces the templated city intro when the client writes their own. */
+      intro?: string
+      /** Genuinely local detail: permit rules, soil, tank types. The anti-doorway field. */
+      notes?: string
+      /** What this city typically pays, when it differs from the general range. */
+      priceNote?: string
+    })[]
+  }
+}
 export type Service = SiteConfig['services'][number]
 export type City = SiteConfig['serviceArea']['cities'][number]
 

@@ -114,6 +114,18 @@ export function onboardingToBundle(data) {
     aboutPoints: differentiators.length ? differentiators.slice(0, 3) : t.aboutPoints,
     areaHeadline: countiesShort.length ? `Serving ${countiesShort.join(' & ')}` : `Serving ${str(d.address_city) || 'the area'}`,
     areaCounties: counties,
+    // Listing links. Never rendered; they go into the structured data so an
+    // engine can tie the site to the client's Google, Yelp and BBB records.
+    profileGoogle: str(d.profile_google),
+    profileYelp: str(d.profile_yelp),
+    profileBbb: str(d.profile_bbb),
+    profileFacebook: str(d.profile_facebook),
+    profileInstagram: str(d.profile_instagram),
+    profileAngi: str(d.profile_angi),
+  }
+  const listings = [d.profile_google, d.profile_yelp, d.profile_bbb, d.profile_facebook].filter((x) => str(x))
+  if (listings.length === 0) {
+    notes.push('no listing links given (Google, Yelp, BBB); assistants cannot confirm the site and the listings are the same business')
   }
   if (!str(d.google_review_url)) notes.push('no Google review link: the review-request texts have nowhere to send people')
   if (num(d.google_review_count) === 0) notes.push('no Google review count: rating blocks hidden')
