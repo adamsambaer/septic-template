@@ -174,10 +174,17 @@ export function mapCms(input) {
   }
   const logo = imageUrl(p?.logo, assetBaseUrl) || brandLogo
   const logoLight = imageUrl(p?.logoLight, assetBaseUrl) || brandLogo
-  if (logo) photos.logo = logo
-  else notes.push('photos.logo: no Branding logo and no Photos override, demo logo kept')
-  if (logoLight) photos.logoLight = logoLight
-  else notes.push('photos.logoLight: no Branding logo and no Photos override, demo logo kept')
+  // Always emitted, blank when blank. A missing logo must NOT fall through to
+  // the demo one: that puts "Coastal Septic Co." on a client's header while
+  // every other word on the page is their own name, which looks broken and is
+  // worse than no image at all. Blank makes the nav, footer, quote form and
+  // chat widget set the company name in type instead, which is a real
+  // wordmark, not a placeholder.
+  photos.logo = logo
+  photos.logoLight = logoLight
+  if (!logo || !logoLight) {
+    notes.push('no logo on Branding or in Photos: the site sets the company name in type. Upload one to replace it.')
+  }
   slot('hero', p?.hero)
   slot('about', p?.about)
   slot('cta', p?.cta)

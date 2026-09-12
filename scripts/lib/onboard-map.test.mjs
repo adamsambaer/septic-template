@@ -89,7 +89,7 @@ describe('onboardingToBundle', () => {
     expect(b.reviews[0].content.name).toBe('Tina M.')
     expect(b.photos.logo).toEqual({ kind: 'url', url: 'https://cdn.example.com/gulfside-logo.png' })
     expect(b.branding.colors[0]).toEqual({ name: 'Primary', hex: '#1D6FB8' })
-    expect(b.notes.some((n) => n.startsWith('photos are at'))).toBe(true)
+    expect(b.notes.some((n) => n.includes('also linked a folder'))).toBe(true)
   })
 
   it('feeds straight into mapCms and yields a config with the client on it', () => {
@@ -105,5 +105,49 @@ describe('onboardingToBundle', () => {
     expect(config.photos.logo).toBe('https://cdn.example.com/gulfside-logo.png')
     expect(config.trust.licenseNumber).toBe('SR0123456')
     expect(config.copy.aboutSection.yearsLabel).toBe('Years in FL')
+  })
+})
+
+describe('uploaded logo and photos from the intake form', () => {
+  const uploads = {
+    business_name: 'Backwater Septic',
+    business_phone: '239-555-0144',
+    logo_url: 'https://assets.sapt.ai/proj/branding/abc/logo.png',
+    photo_urls: [
+      'https://assets.sapt.ai/proj/cms/1/truck.jpg',
+      'https://assets.sapt.ai/proj/cms/2/crew.jpg',
+      'https://assets.sapt.ai/proj/cms/3/tank.jpg',
+      'https://assets.sapt.ai/proj/cms/4/extra.jpg',
+    ],
+  }
+
+  it('uses an uploaded logo for both lockups', () => {
+    const b = onboardingToBundle(uploads)
+    expect(b.photos.logo).toEqual({ kind: 'url', url: uploads.logo_url })
+    expect(b.photos.logoLight).toEqual({ kind: 'url', url: uploads.logo_url })
+  })
+
+  it('fills the three big photo slots in order and flags the spares', () => {
+    const b = onboardingToBundle(uploads)
+    expect(b.photos.hero.url).toContain('truck.jpg')
+    expect(b.photos.about.url).toContain('crew.jpg')
+    expect(b.photos.cta.url).toContain('tank.jpg')
+    expect(b.notes.some((n) => n.includes('1 more photo'))).toBe(true)
+  })
+
+  it('says the company name will be set in type when no logo arrives', () => {
+    const b = onboardingToBundle({ business_name: 'Backwater Septic', business_phone: '239-555-0144' })
+    expect(b.photos.logo).toBeUndefined()
+    expect(b.notes.some((n) => n.includes('company name in type'))).toBe(true)
+  })
+
+  it('records that they asked for generated imagery', () => {
+    const b = onboardingToBundle({ business_name: 'X', business_phone: '239-555-0144', photos_ai: true })
+    expect(b.notes.some((n) => n.includes('generated imagery'))).toBe(true)
+  })
+
+  it('ignores anything that is not an image url', () => {
+    const b = onboardingToBundle({ business_name: 'X', business_phone: '239-555-0144', photo_urls: ['https://drive.google.com/folder/xyz'] })
+    expect(b.photos.hero).toBeUndefined()
   })
 })

@@ -133,10 +133,37 @@ export function onboardingToBundle(data) {
   // ── Photos: the form collects links to folders, not files ──
   const photos = {}
   const logo = str(d.logo_url)
-  if (isImageUrl(logo)) photos.logo = { kind: 'url', url: logo }
-  else notes.push(logo ? `logo_url is a folder or page (${logo}); download the file and upload it to Branding` : 'no logo link; upload to Branding')
-  if (str(d.photos_url)) notes.push(`photos are at ${str(d.photos_url)}; upload the best ones to Assets and pick them in Photos and on each service`)
-  else notes.push('no photos link; demo photos will show until real ones are uploaded')
+  if (isImageUrl(logo)) {
+    // Uploaded through the intake form, so it is already a real file in the
+    // project's asset library. Same image in both slots; the light lockup is
+    // only a nicety and a client rarely has two versions.
+    photos.logo = { kind: 'url', url: logo }
+    photos.logoLight = { kind: 'url', url: logo }
+  } else if (logo) {
+    notes.push(`logo_url is a folder or a page (${logo}), not an image file; download it and upload it to Branding`)
+  } else {
+    notes.push('no logo: the site will set the company name in type. Upload one to Branding to replace it.')
+  }
+
+  // Photos they uploaded on the form, best first, into the three big slots.
+  const uploadedPhotos = list(d.photo_urls).filter(isImageUrl)
+  const SLOTS = ['hero', 'about', 'cta']
+  uploadedPhotos.slice(0, SLOTS.length).forEach((url, i) => { photos[SLOTS[i]] = { kind: 'url', url } })
+  const spare = uploadedPhotos.length - SLOTS.length
+  if (spare > 0) {
+    notes.push(`${spare} more photo${spare === 1 ? '' : 's'} in Assets, ready to put on individual service pages`)
+  }
+
+  if (uploadedPhotos.length === 0) {
+    if (bool(d.photos_ai)) {
+      notes.push('they have no photos and asked for generated imagery: the demo photos are standing in, so swap in real ones as soon as they text any')
+    } else if (str(d.current_website)) {
+      notes.push(`no photos uploaded; pull the best ones off ${str(d.current_website)} with \`pnpm draft\``)
+    } else {
+      notes.push('no photos and no website: the demo photos will show until real ones arrive')
+    }
+  }
+  if (str(d.photos_url)) notes.push(`they also linked a folder: ${str(d.photos_url)}`)
 
   // ── Services: template content filtered by what they offer, in template order ──
   const offered = new Set(list(d.services_offered))

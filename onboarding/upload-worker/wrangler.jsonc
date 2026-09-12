@@ -1,0 +1,15 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "airacq-intake-upload",
+  "main": "src/index.js",
+  "compatibility_date": "2026-08-01",
+  "observability": { "enabled": true },
+  "vars": {
+    // Uploads land in the Air Acquisition project's asset library. The onboard
+    // script then points the client's CMS at the resulting public URLs, so the
+    // agency keeps one place to look when a client sends something odd.
+    "SAPT_PROJECT_ID": "e07c4bff-37e8-46e3-96eb-f1c0c13b095c"
+  }
+  // SAPT_API_KEY is a secret, never a var:
+  //   npx wrangler secret put SAPT_API_KEY
+}
