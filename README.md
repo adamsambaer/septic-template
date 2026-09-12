@@ -68,7 +68,7 @@ captures it with the demo company's strings turned into `{{variables}}`.
 | **Assets** | many | Every photo. Upload here, pick in the fields below. |
 | **1 · Site settings** | 1 | Identity, contact, address, site URL, theme, emergency strip, text-us chat widget on/off, hero, trust signals, about copy, counties, **which pages exist**, and the listing links / hours / map pin that go into the structured data. |
 | **2 · Photos** | 1 | Hero, about, call-band photos and their focal points. Logo fallbacks. |
-| **3 · Services** | one per service | Title, slug, kind, form option, card text, page intro, included list, this service's process steps and FAQ, photo, and a typical price range with the factors that move it. **Each published item is a page.** |
+| **3 · Services** | one per service | Title, slug, kind, form option, card text, page intro, included list, this service's process steps and FAQ, photo. **Each published item is a page.** |
 | **4 · Cities** | one per city | Name, slug, county, and **local detail**: the two or three sentences that are only true of that city. Each published item is a city page plus a coverage-band tile. |
 | **5 · FAQs (general)** | many | Home, contact, services hub, city pages. |
 | **6 · Process steps (general)** | 3 to 5 | Services hub, and any service without its own steps. |
@@ -132,7 +132,7 @@ and what it does not, is in [`docs/AI-SEARCH.md`](docs/AI-SEARCH.md).
 | Every page is static HTML | ChatGPT, Claude and Perplexity crawlers do not run JavaScript. A site whose copy only appears after JS is invisible to them. This is the one thing most contractor sites get wrong. |
 | `robots.txt` names the retrieval crawlers | `OAI-SearchBot`, `PerplexityBot`, `Claude-SearchBot`, `bingbot` and friends, so a later copy-pasted robots file cannot quietly remove the site from answers. |
 | One JSON-LD graph per page | The business is described once, by `@id`, and every page references it. Listing links (`sameAs`), hours, map pin and price range let an engine confirm the site and the client's Google and Yelp records are one business. |
-| Prices where the client publishes them | "How much does X cost" is a question assistants answer constantly, and a real range with its cost factors is the part that gets quoted. Hidden until filled in; never invented. |
+| Specific numbers in the copy | The one content change with a peer-reviewed study behind it. Tank sizes, intervals and response times get quoted back; vague marketing copy does not. Prices are deliberately not published, see the doc. |
 | Local detail per city | City pages that differ only by a swapped name are the doorway pattern Google spent 2026 suppressing. `pnpm pull` warns for every city with nothing local on it. |
 
 Structured data is hygiene, not a magic lever: a controlled study of ~1,900

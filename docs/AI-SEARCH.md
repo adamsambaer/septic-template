@@ -77,13 +77,27 @@ In practice: "a 1,000 gallon tank serving four people needs pumping every two
 and a half to three years" beats "tanks should be pumped periodically". The CMS
 field descriptions push clients toward this.
 
-### Cost ranges per service — strong evidence for the query, moderate for the format
+### No prices, deliberately
 
 "How much does X cost" is one of the most common things people put to an
-assistant, and the pages that get quoted back carry a real range plus the
-factors behind it. Set `priceFrom` on a service in Sapt and the cost block
-appears, with an `Offer` in the structured data. Leave it at zero and the whole
-section does not exist. A price is never invented on a client's behalf.
+assistant, and pages carrying a real range do get quoted. This template still
+does not publish prices, and that is a considered trade, not an oversight.
+
+Publishing a number invites price shopping, which is the opposite of what a
+contractor wants from a website whose job is to get the phone to ring. A range
+wide enough to be safe reads as a guess, and the person who has to defend it is
+standing in a driveway, not sitting at a keyboard. Almost nobody in the trade
+does it, and the clients we sell to do not want it.
+
+The queries are not lost entirely: a service FAQ can answer what moves a price
+without naming one, which is the part people actually want and the part that
+holds up when quoted. That costs nothing and commits to nothing.
+
+What must never happen is putting a price in the HTML or the structured data
+without showing it to visitors. Hidden text and markup for content a reader
+cannot see are both explicit spam-policy violations, and Google and Bing both
+called out serving crawlers a different version of a page in February 2026. It
+is visible and honest, or it is absent. Here it is absent.
 
 ### Local detail per city — strong evidence on the risk
 
@@ -149,8 +163,9 @@ search. It is not a separate service line, it is a reason not to lose.
 1. Fill **Local detail** on every published city, or unpublish the city.
 2. Fill the **listing links** in Site settings: Google, Yelp, BBB, Facebook.
 3. Fill **opening hours**, the **map pin** and **price range** in Site settings.
-4. Publish a **price range and cost factors** on the services where a real
-   number can be given.
+4. Put **real numbers that are not prices** in the service intros and FAQs:
+   tank sizes, pumping intervals, response times, years in business. This is
+   the one content lever with a peer-reviewed study behind it.
 5. Register the site in **Bing Webmaster Tools**, not just Google Search
    Console. Bing feeds Copilot and ChatGPT leans on it.
 6. Check **Cloudflare bot controls** on the client's zone after go-live.

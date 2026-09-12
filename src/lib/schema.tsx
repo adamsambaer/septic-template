@@ -124,12 +124,13 @@ export function breadcrumbNode(trail: Crumb[]) {
 type ServiceLike = (typeof siteConfig)['services'][number]
 
 /**
- * One service, tied back to the business by reference. The Offer block is
- * emitted only when the client has published a real price range: a made-up
- * price is worse than no price.
+ * One service, tied back to the business by reference.
+ *
+ * Deliberately carries no price. Structured data has to describe what is
+ * actually on the page, and this template does not publish prices, so an
+ * Offer block here would be marking up content no visitor can see.
  */
 export function serviceNode(service: ServiceLike, areaNames?: string[]) {
-  const price = service.price
   const areas = areaNames?.length ? areaNames : siteConfig.serviceArea.counties
 
   return clean({
@@ -140,21 +141,6 @@ export function serviceNode(service: ServiceLike, areaNames?: string[]) {
     url: absolute(`/services/${service.slug}`),
     provider: { '@id': BUSINESS_ID },
     areaServed: areas.map((name) => ({ '@type': 'AdministrativeArea', name })),
-    offers:
-      price && price.from > 0
-        ? clean({
-            '@type': 'Offer',
-            priceCurrency: 'USD',
-            priceSpecification: clean({
-              '@type': 'PriceSpecification',
-              priceCurrency: 'USD',
-              minPrice: price.from,
-              maxPrice: price.to > 0 ? price.to : undefined,
-              unitText: price.unit || undefined,
-            }),
-            availability: 'https://schema.org/InStock',
-          })
-        : undefined,
   })
 }
 

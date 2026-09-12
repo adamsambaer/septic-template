@@ -162,16 +162,6 @@ export const defaults = {
       ],
       image: '/img/svc-pumpout.webp',
       focal: '50% 40%',
-      // DEMO pricing. A client's real range comes from Sapt and replaces this
-      // wholesale, so a demo number can never appear on a client's site.
-      price: { from: 325, to: 525, unit: 'per pump-out, residential tank', note: 'Covers a standard 1,000 to 1,500 gallon residential tank with an accessible lid.' },
-      costFactors: [
-        'Tank size: a 1,500 gallon tank takes longer to empty than a 1,000',
-        'How long since the last pump-out, because compacted solids take longer',
-        'Whether the lid is at grade or buried, since digging it out is labour',
-        'Truck access, and how much hose we have to run from the driveway',
-        'Whether the filter needs cleaning or replacing while we are in there',
-      ],
     },
     {
       icon: 'clipboard-check',
@@ -204,13 +194,6 @@ export const defaults = {
       ],
       image: '/img/svc-inspection.webp',
       focal: '35% 45%',
-      price: { from: 250, to: 450, unit: 'per inspection', note: 'A real-estate transfer inspection is at the top of that range because it includes the written report.' },
-      costFactors: [
-        'Whether it is a routine check or a real-estate transfer inspection',
-        'Whether the tank has to be pumped to see the baffles properly',
-        'Locating a tank that has no visible lid or riser',
-        'Aerobic systems take longer than conventional ones',
-      ],
     },
     {
       icon: 'wrench',
@@ -243,13 +226,6 @@ export const defaults = {
       ],
       image: '/img/truck.webp',
       focal: '50% 55%',
-      price: { from: 275, to: 1400, unit: 'per repair, parts and labour', note: 'A float switch is at the bottom of that range. A new effluent pump with a control panel is at the top.' },
-      costFactors: [
-        'Which part failed: a float is cheap, a pump and panel is not',
-        'How deep the tank is, because depth is labour',
-        'Whether the repair needs a county permit',
-        'Concrete work on a lid or riser, which is priced separately',
-      ],
     },
     {
       icon: 'layers',
@@ -334,7 +310,6 @@ export const defaults = {
       {
         name: 'Davie', slug: 'davie', county: 'Broward County',
         notes: 'Davie properties tend to sit on larger lots with the tank a long way from anywhere a truck can park, so we carry extra hose as standard here rather than sending a second crew back out.',
-        priceNote: 'Long hose runs on the bigger lots can add to a standard pump-out. We tell you on the call, not afterwards.',
       },
       { name: 'Plantation', slug: 'plantation', county: 'Broward County' },
       { name: 'Parkland', slug: 'parkland', county: 'Broward County' },
@@ -557,12 +532,6 @@ export const defaults = {
       relatedTitle: 'Also',
       relatedAccent: 'available',
       metaTitle: '{service} in {city} & {counties} | {company}',
-      // Cost block. Renders only when a price range is filled in for the
-      // service in Sapt, so the section does not exist until it is true.
-      costEyebrow: 'Typical cost',
-      costTitle: 'What {service} costs in',
-      costFactorsLabel: 'What moves the price',
-      costDisclaimer: 'A real number for your property comes from the call, and it does not change once we are on site.',
     },
     aboutPage: { eyebrow: 'About', metaTitle: 'About {company} | Licensed Septic Contractor, {city} {state}' },
     reviewsPage: {
@@ -601,29 +570,22 @@ export const defaults = {
   saptBaseUrl: 'https://api.sapt.ai',
 }
 
-/** A published price range for one service. `from: 0` means "not published". */
-export type ServicePrice = { from: number; to: number; unit: string; note: string }
-
 /**
- * The defaults above describe the demo company. These extra properties exist
- * only in a client's Sapt CMS, so they are optional on the type rather than
- * invented here: a price the client has not given must never be rendered.
+ * The defaults above describe the demo company. The per-city fields below
+ * exist only in a client's Sapt CMS, so they are optional on the type rather
+ * than invented here.
+ *
+ * This template deliberately publishes no prices. "Call for a quote" is the
+ * norm in the trade, a range wide enough to be safe reads as a guess, and the
+ * contractor is the one who has to defend it in a driveway.
  */
-export type SiteConfig = Omit<typeof defaults, 'services' | 'serviceArea'> & {
-  services: ((typeof defaults)['services'][number] & {
-    /** Sapt: 3 · Services → Cost. Hidden entirely until `from` is set. */
-    price?: ServicePrice
-    /** What moves the price for this job. Renders under the range. */
-    costFactors?: string[]
-  })[]
+export type SiteConfig = Omit<typeof defaults, 'serviceArea'> & {
   serviceArea: Omit<(typeof defaults)['serviceArea'], 'cities'> & {
     cities: ((typeof defaults)['serviceArea']['cities'][number] & {
       /** Replaces the templated city intro when the client writes their own. */
       intro?: string
-      /** Genuinely local detail: permit rules, soil, tank types. The anti-doorway field. */
+      /** Genuinely local detail: how the crew covers this town. The anti-doorway field. */
       notes?: string
-      /** What this city typically pays, when it differs from the general range. */
-      priceNote?: string
     })[]
   }
 }

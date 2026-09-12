@@ -96,13 +96,12 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
             from every other city page, so it is the field that decides whether
             this is a real page or a doorway page. Nothing renders until the
             client fills it in, and nothing here is invented on their behalf. */}
-        {(place.notes || place.priceNote) && (
+        {place.notes && (
           <section className="bg-surface py-20 lg:py-28">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <SectionHead eyebrow={c.localEyebrow} title={c.localTitle} accent={place.name} />
               <div className="mt-10 max-w-3xl">
-                {place.notes && <p className="leading-relaxed text-text-muted">{place.notes}</p>}
-                {place.priceNote && <p className="mt-5 leading-relaxed text-text-muted">{place.priceNote}</p>}
+                <p className="leading-relaxed text-text-muted">{place.notes}</p>
               </div>
             </div>
           </section>
