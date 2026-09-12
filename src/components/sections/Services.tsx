@@ -39,7 +39,10 @@ export function Services() {
           {c.intro && <p className="max-w-sm text-sm leading-relaxed text-text-muted">{t(c.intro)}</p>}
         </div>
 
-        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {/* Four services in a three-wide grid leaves one card stranded on its
+            own row, which reads as a mistake. Four goes two-by-two instead.
+            Five and six fill three columns cleanly. */}
+        <div className={`mt-10 grid gap-4 sm:grid-cols-2 ${services.length === 4 ? 'lg:grid-cols-2' : 'lg:grid-cols-3'}`}>
           {services.map((service, i) => {
             const isEmergency = service.icon === 'siren'
 

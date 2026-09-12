@@ -136,4 +136,12 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
   )
 }
 
-export const dynamicParams = false
+/**
+ * Deliberately NOT `dynamicParams = false`.
+ *
+ * On Cloudflare Workers that flag made every prerendered service page return
+ * 404 in production while the home page and /services stayed fine, so the
+ * site looked healthy until you clicked a service. The page already calls
+ * notFound() for a slug that is not in the config, so unknown slugs still 404
+ * correctly. The flag bought nothing and broke the real pages.
+ */

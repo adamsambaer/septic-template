@@ -139,4 +139,8 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
   )
 }
 
-export const dynamicParams = false
+/**
+ * Deliberately NOT `dynamicParams = false`. See the note on the service page:
+ * that flag 404s every prerendered city page on Workers. This page already
+ * calls notFound() for a city that is not in the config.
+ */
