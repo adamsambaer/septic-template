@@ -51,3 +51,4 @@ screenshots/
 # and pulled photos (public/img/cms/) ARE tracked: a clone must build with no secret.
 onboarding/out/
 onboarding/template-bundle.json
+onboarding/dist/

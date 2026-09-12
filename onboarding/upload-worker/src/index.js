@@ -32,8 +32,17 @@ const MAX_BYTES = 10 * 1024 * 1024 // per file
 const MAX_TOTAL = 30 * 1024 * 1024
 const TYPES = new Set(['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/svg+xml', 'image/heic', 'image/heif'])
 
-/** Only our own pages may post here. Not airtight, but it stops drive-by use. */
-const ALLOWED = [/^https:\/\/(www\.)?airacquisition\.com$/, /^https:\/\/[a-z0-9-]+\.pages\.dev$/, /^http:\/\/localhost:\d+$/]
+/**
+ * Only our own pages may post here. Named exactly: an earlier version allowed
+ * any *.pages.dev, which is every Cloudflare Pages site on the internet and so
+ * an open door into the agency's asset library. The leading-label group covers
+ * Pages preview deploys of this one project (<hash>.airacq-start.pages.dev).
+ */
+const ALLOWED = [
+  /^https:\/\/(www\.)?airacquisition\.com$/,
+  /^https:\/\/([a-z0-9-]+\.)?airacq-start\.pages\.dev$/,
+  /^http:\/\/localhost:\d+$/,
+]
 
 function cors(origin) {
   const ok = origin && ALLOWED.some((re) => re.test(origin))
