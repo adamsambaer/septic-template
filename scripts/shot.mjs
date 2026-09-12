@@ -62,7 +62,10 @@ ws.onmessage = (m) => {
   else if (msg.method) events.push(msg.method)
 }
 const send = (method, params = {}) => new Promise((r) => { const i = ++id; pending.set(i, r); ws.send(JSON.stringify({ id: i, method, params })) })
-const evaluate = async (expression) => (await send('Runtime.evaluate', { expression, returnByValue: true })).result?.result?.value
+// awaitPromise lets an --eval return a promise and be waited on, which is the
+// only way to step through a UI whose transitions resolve a turn later.
+const evaluate = async (expression) =>
+  (await send('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true })).result?.result?.value
 
 await send('Page.enable')
 await send('Emulation.setDeviceMetricsOverride', {
@@ -74,7 +77,8 @@ for (let i = 0; i < 100 && !events.includes('Page.loadEventFired'); i++) await s
 await sleep(opt.wait)
 
 if (opt.eval) {
-  await evaluate(opt.eval)
+  const value = await evaluate(opt.eval)
+  if (value !== undefined) console.log('eval:', value)
   if (opt.reload) {
     events.length = 0
     await send('Page.reload')

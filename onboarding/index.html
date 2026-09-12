@@ -260,6 +260,10 @@
   var MAX_PHOTOS = 9;
   var uploaded = { logo_url: '', photo_urls: [] };   // filled once the files are in Sapt
   var at = 0;
+  // The step only advances once the uploads settle, which is a promise turn
+  // later. Without this a double-tap on Next -- normal on a phone -- queues two
+  // transitions off one validated step and skips the next one entirely.
+  var busy = false;
 
   function labelOf(el) {
     var s = el.parentNode.querySelector('span');
@@ -399,11 +403,14 @@
 
   form.addEventListener('submit', function (e) {
     e.preventDefault();
+    if (busy) return;
     err.classList.remove('show');
     if (!validate()) return;
 
+    busy = true;
     var go = at === 2 ? uploadFiles() : Promise.resolve();
     go.then(function () {
+      busy = false;
       next.disabled = false;
       if (at < steps.length - 1) { at++; return render(); }
       if (form.company_website.value) return;             // honeypot tripped
@@ -411,11 +418,13 @@
       return fetch(form.dataset.endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data: collect() }) })
         .then(function (r) {
           if (!r.ok) throw new Error(r.status);
+          busy = false;
           form.hidden = true; hero.hidden = true; done.classList.add('show');
           count.textContent = 'Done'; fill.style.width = '100%';
           window.scrollTo({ top: 0, behavior: 'smooth' });
         });
     }).catch(function (e2) {
+      busy = false;
       fail(String(e2.message || '').indexOf('upload') >= 0 || String(e2.message || '').indexOf('MB') >= 0 || String(e2.message || '').indexOf('image') >= 0
         ? e2.message + '. Try again, or skip it and text the files to us later.'
         : 'That did not send. Try again in a minute, or text us a screenshot of this page and we will take it from there.');
