@@ -5,152 +5,166 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Get started | Air Acquisition</title>
 <meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.ico">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Outfit:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Outfit:wght@600;700;800&display=swap">
 <style>
-  /* Air Acquisition brand, taken from airacquisition.com: Outfit for display,
-     DM Sans for body, blue accent on near-black ink, warm off-white paper,
-     rounded corners. Deliberately NOT the septic client look (square, orange):
-     this page is ours, not theirs. */
+  /* Lifted from airacquisition.com so this page is the same product as the
+     site it sits on: Outfit 800 at -.035em for display, DM Sans for body,
+     near-black ink on cream, white cards held by a 1px ring, pill buttons
+     that are INK not blue. Blue is an accent, never the button. */
   :root {
     --ink: #121212; --ink-2: #262626; --ink-3: #3a3a3a;
-    --paper: #ffffff; --cream: #f2f2f0; --line: #e3e3df; --muted: #6b6b66;
-    --accent: #2456f6; --accent-dark: #1a43c8; --accent-soft: #e4eafe;
+    --paper: #ffffff; --cream: #ffffff; --cream-2: #f2f2f0;
+    --line: #e3e3df; --muted: #6b6b66;
+    --accent: #2456f6; --accent-soft: #e4eafe;
     --red: #c4392c;
     --display: "Outfit", ui-sans-serif, system-ui, sans-serif;
     --sans: "DM Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
   }
   * { box-sizing: border-box; }
-  html, body { margin: 0; background: var(--cream); color: var(--ink); font: 400 16px/1.6 var(--sans); -webkit-font-smoothing: antialiased; }
-  .wrap { max-width: 680px; margin: 0 auto; padding: 0 20px; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--cream); color: var(--ink); font: 400 16px/1.6 var(--sans); -webkit-font-smoothing: antialiased; }
 
-  header.top { background: var(--ink); color: #fff; padding: 64px 0 56px; }
-  .eyebrow { font: 500 13px/1 var(--sans); letter-spacing: .01em; color: rgba(255,255,255,.55); }
-  h1 { margin: 16px 0 14px; font: 700 clamp(32px, 6vw, 52px)/1.05 var(--display); letter-spacing: -.02em; }
-  h1 span { color: #7ea0ff; }
-  header.top p { margin: 0; max-width: 30em; color: rgba(255,255,255,.72); font-size: 17px; }
+  .display { font-family: var(--display); font-weight: 800; letter-spacing: -.035em; line-height: .98; text-wrap: balance; }
+  .eyebrow { font-family: var(--display); font-weight: 700; font-size: .75rem; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
 
-  main { padding: 28px 0 88px; }
-  form { display: grid; gap: 14px; }
+  /* top bar, same shape as the site's */
+  .bar { position: sticky; top: 0; z-index: 20; background: rgba(255,255,255,.95); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+  /* the site's header spans a wide container even though its content is narrow */
+  .bar-in { max-width: 1152px; margin: 0 auto; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .bar img { height: 34px; width: auto; display: block; }
+  .count { font-family: var(--display); font-weight: 700; font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+  .track { height: 3px; background: var(--line); }
+  .fill { height: 3px; width: 33.33%; background: var(--ink); transition: width .28s ease; }
 
-  section.card { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 26px 24px; }
-  section.card h2 { margin: 0 0 4px; font: 600 20px/1.25 var(--display); letter-spacing: -.01em; }
-  section.card h2 b { color: var(--accent); font-weight: 600; }
-  section.card > p.help { margin: 0 0 20px; color: var(--muted); font-size: 14.5px; }
+  main { max-width: 640px; margin: 0 auto; padding: 40px 20px 96px; }
+  .hero { margin-bottom: 28px; }
+  .hero h1 { margin: 10px 0 14px; font-size: clamp(2.25rem, 8vw, 3.25rem); }
+  .hero p { margin: 0; color: var(--muted); font-size: 17px; max-width: 32em; }
 
-  .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
-  .grid .full { grid-column: 1 / -1; }
+  .card { background: var(--paper); border-radius: 16px; box-shadow: 0 0 0 1px var(--line); padding: 26px 24px; }
+  .card h2 { margin: 0 0 6px; font-family: var(--display); font-weight: 700; font-size: 1.4rem; letter-spacing: -.02em; line-height: 1.15; }
+  .card > p.help { margin: 0 0 22px; color: var(--muted); font-size: 14.5px; }
+
+  .fields { display: grid; gap: 18px; }
   label { display: block; }
-  label > span { display: block; margin-bottom: 6px; font: 500 14px/1.3 var(--sans); color: var(--ink-2); }
+  label > span { display: block; margin-bottom: 7px; font: 500 14.5px/1.3 var(--sans); color: var(--ink-2); }
   label > span i { color: var(--accent); font-style: normal; }
-  label small { display: block; margin-top: 6px; font-size: 13px; line-height: 1.5; color: var(--muted); }
+  label small { display: block; margin-top: 7px; font-size: 13px; line-height: 1.5; color: var(--muted); }
   input[type=text], input[type=email], input[type=tel], input[type=url], textarea {
-    width: 100%; padding: 13px 14px; border: 1.5px solid var(--line); border-radius: 10px;
+    width: 100%; padding: 13px 15px; border: 1.5px solid var(--line); border-radius: 12px;
     background: #fff; font: 400 16px/1.5 var(--sans); color: var(--ink); }
-  input::placeholder, textarea::placeholder { color: #a7a7a2; }
+  input::placeholder, textarea::placeholder { color: #aeaea8; }
   input:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
-  textarea { min-height: 92px; resize: vertical; }
+  textarea { min-height: 108px; resize: vertical; }
 
-  .aside { background: var(--accent-soft); border-radius: 14px; padding: 22px 24px; }
-  .aside h3 { margin: 0 0 8px; font: 600 16px/1.3 var(--display); color: var(--ink); }
-  .aside p { margin: 0; color: var(--ink-3); font-size: 14.5px; }
-  .aside p + p { margin-top: 10px; }
+  .note { margin: 18px 0 0; background: var(--cream-2); border-radius: 12px; padding: 16px 18px; color: var(--ink-3); font-size: 14px; }
+  .note b { font-family: var(--display); font-weight: 700; }
 
-  .submit { display: grid; gap: 14px; margin-top: 4px; }
-  button[type=submit] {
-    width: 100%; padding: 17px 24px; border: 0; border-radius: 999px; cursor: pointer;
-    background: var(--accent); color: #fff; font: 600 16px/1 var(--sans); letter-spacing: .01em; }
-  button[type=submit]:hover { background: var(--accent-dark); }
-  button[type=submit][disabled] { opacity: .55; cursor: wait; }
-  button:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
-  .fine { margin: 0; font-size: 13px; color: var(--muted); text-align: center; }
+  .nav { display: flex; gap: 12px; align-items: center; margin-top: 22px; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; border-radius: 999px;
+    padding: .95rem 1.5rem; font: 500 .95rem/1 var(--sans); letter-spacing: -.01em; white-space: nowrap;
+    border: 0; cursor: pointer; transition: transform .12s, background-color .12s, color .12s, border-color .12s; }
+  .btn:active { transform: translateY(1px); }
+  .btn-primary { background: var(--ink); color: var(--cream); flex: 1; }
+  .btn-primary:hover { background: #000; }
+  .btn-primary[disabled] { opacity: .55; cursor: wait; }
+  .btn-secondary { background: transparent; color: var(--ink); border: 2px solid var(--ink); }
+  .btn-secondary:hover { background: var(--ink); color: var(--cream); }
+  .btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 
-  .error { display: none; background: #fff; border: 1.5px solid var(--red); border-radius: 10px; padding: 13px 15px; font-size: 14.5px; color: var(--red); }
+  .error { display: none; margin-top: 16px; background: #fff; border: 1.5px solid var(--red); border-radius: 12px; padding: 13px 15px; font-size: 14.5px; color: var(--red); }
   .error.show { display: block; }
 
-  .done { display: none; background: var(--ink); color: #fff; border-radius: 14px; padding: 44px 30px; }
+  .done { display: none; text-align: left; }
   .done.show { display: block; }
-  .done h2 { margin: 0 0 10px; font: 700 30px/1.15 var(--display); letter-spacing: -.02em; }
+  .done .card { background: var(--ink); box-shadow: none; color: #fff; padding: 44px 30px; }
+  .done h2 { color: #fff; font-size: 2rem; letter-spacing: -.03em; font-weight: 800; }
   .done p { margin: 0 0 12px; color: rgba(255,255,255,.72); }
   .done p:last-child { margin-bottom: 0; }
 
+  .fine { margin: 16px 0 0; font-size: 13px; color: var(--muted); text-align: center; }
   .hp { position: absolute; left: -9999px; width: 0; height: 0; opacity: 0; }
-  footer { text-align: center; color: var(--muted); font-size: 13px; padding: 0 20px 44px; }
+  footer { max-width: 640px; margin: 0 auto; padding: 0 20px 48px; color: var(--muted); font-size: 13px; }
   footer a { color: var(--muted); }
-  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  [hidden] { display: none !important; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .fill, .btn { transition: none; } }
 </style>
 </head>
 <body>
 
-<header class="top">
-  <div class="wrap">
-    <div class="eyebrow">Air Acquisition</div>
-    <h1>Eight questions.<br><span>Then we build it.</span></h1>
-    <p>Two minutes now, live in about a week. We take everything else off your existing website and confirm it with you on one short call, so you are not sitting here typing out your whole business.</p>
+<div class="bar">
+  <div class="bar-in">
+    <img src="/logo.png" alt="Air Acquisition">
+    <span class="count" id="count">Step 1 of 3</span>
   </div>
-</header>
+  <div class="track"><div class="fill" id="fill"></div></div>
+</div>
 
 <main>
-  <div class="wrap">
-    <!--
-      Posts one JSON record to the Air Acquisition Sapt project's public
-      ingest endpoint for the `client_onboarding` type. No key needed: the
-      type is public-ingestable. Field names match the CRM schema exactly.
+  <div class="hero" id="hero">
+    <p class="eyebrow">New client setup</p>
+    <h1 class="display">Eight questions. Then we build it.</h1>
+    <p>Two minutes now, live in about a week. We take everything else off your existing website and confirm it with you on one short call, so you are not sitting here typing out your whole business.</p>
+  </div>
 
-      Deliberately eight fields. Completion falls off a cliff past about seven,
-      and this buyer is usually on a phone on a job. Everything that used to be
-      asked here is now read off their existing site by `pnpm draft <url>` and
-      confirmed on the call.
-    -->
-    <form id="f" novalidate
-          data-endpoint="https://api.sapt.ai/public/projects/e07c4bff-37e8-46e3-96eb-f1c0c13b095c/objects/client_onboarding">
+  <!--
+    Posts one JSON record to the Air Acquisition Sapt project's public ingest
+    endpoint for the `client_onboarding` type. No key needed: the type is
+    public-ingestable. Field names match the CRM schema exactly.
 
-      <section class="card">
-        <h2><b>01 ·</b> Your business</h2>
-        <p class="help">Exactly as customers should see it.</p>
-        <div class="grid">
-          <label class="full"><span>Business name <i>*</i></span><input type="text" name="business_name" required placeholder="Coastal Septic Co."></label>
-          <label class="full"><span>Your current website</span><input type="url" name="current_website" placeholder="https://"><small>This is the one that saves you the most time. We read your services, the towns you cover and your photos straight off it. Leave it blank if you do not have one.</small></label>
-          <label><span>Phone customers call <i>*</i></span><input type="tel" name="business_phone" required placeholder="(954) 555-0142"></label>
-          <label><span>Mobile for job alerts <i>*</i></span><input type="tel" name="owner_phone" required placeholder="(954) 555-0199"><small>Every new lead texts this number within seconds. Never shown on the site.</small></label>
-        </div>
-      </section>
+    Three steps on purpose. Completion falls off a cliff past about seven
+    fields on one page, and this buyer is usually on a phone on a job.
+    Everything else is read off their existing site by `pnpm draft <url>`.
+  -->
+  <form id="f" novalidate
+        data-endpoint="https://api.sapt.ai/public/projects/e07c4bff-37e8-46e3-96eb-f1c0c13b095c/objects/client_onboarding">
 
-      <section class="card">
-        <h2><b>02 ·</b> So we can reach you</h2>
-        <div class="grid">
-          <label class="full"><span>Your email <i>*</i></span><input type="email" name="owner_email" required placeholder="you@yourcompany.com"><small>For the agreement and your login. Never shown on the site.</small></label>
-          <label class="full"><span>Your Google Business Profile</span><input type="url" name="profile_google" placeholder="https://maps.app.goo.gl/..."><small>Open your business in Google Maps, hit Share, copy the link. This is what tells Google and ChatGPT that your website and your listing are the same company, so you get credit for the reviews you already have.</small></label>
-          <label class="full"><span>Your domain</span><input type="text" name="domain" placeholder="coastalseptic.com"><small>The one you own. Leave it blank and we will register one for you.</small></label>
-        </div>
-      </section>
-
-      <section class="card">
-        <h2><b>03 ·</b> The one thing we cannot look up</h2>
-        <p class="help">Everything else we can find. This we cannot.</p>
-        <div class="grid">
-          <label class="full"><span>What do you promise customers that the other guys do not?</span><textarea name="differentiators" placeholder="Price quoted before we start&#10;Same crew every visit&#10;We tell you when a repair will do instead of a replacement"></textarea><small>One per line. Plain words beat polished ones. Skip it and we will ask on the call.</small></label>
-        </div>
-      </section>
-
-      <div class="aside">
-        <h3>What happens next</h3>
-        <p>We build a real, working version of your site from what is already published about you, usually within a day or two. Then one call, about twenty minutes, to check we got it right and fill in the few things that are not online anywhere.</p>
-        <p>Do not go hunting for photos now. We start with the ones already on your site, and once you are set up you can just text us better ones.</p>
+    <section class="card" data-step="1">
+      <h2>Your business</h2>
+      <p class="help">Exactly as customers should see it.</p>
+      <div class="fields">
+        <label><span>Business name <i>*</i></span><input type="text" name="business_name" required autocomplete="organization" placeholder="Coastal Septic Co."></label>
+        <label><span>Your current website</span><input type="url" name="current_website" inputmode="url" placeholder="https://"><small>This one saves you the most time. We read your services, the towns you cover and your photos straight off it. Leave it blank if you do not have one.</small></label>
+        <label><span>Phone customers call <i>*</i></span><input type="tel" name="business_phone" required inputmode="tel" autocomplete="tel" placeholder="(954) 555-0142"></label>
+        <label><span>Mobile for job alerts <i>*</i></span><input type="tel" name="owner_phone" required inputmode="tel" placeholder="(954) 555-0199"><small>Every new lead texts this number within seconds. Never shown on the site.</small></label>
       </div>
+    </section>
 
-      <input class="hp" type="text" name="company_website" tabindex="-1" autocomplete="off" aria-hidden="true">
-
-      <div class="submit">
-        <div class="error" id="err"></div>
-        <button type="submit" id="btn">Send it over</button>
-        <p class="fine">By sending this you agree we may contact you about your website and text-back system. We never sell or share your information.</p>
+    <section class="card" data-step="2" hidden>
+      <h2>So we can reach you</h2>
+      <p class="help">None of this appears on your website.</p>
+      <div class="fields">
+        <label><span>Your email <i>*</i></span><input type="email" name="owner_email" required autocomplete="email" placeholder="you@yourcompany.com"><small>For the agreement and your login.</small></label>
+        <label><span>Your Google Business Profile</span><input type="url" name="profile_google" inputmode="url" placeholder="https://maps.app.goo.gl/..."><small>Open your business in Google Maps, hit Share, copy the link. This is what tells Google and ChatGPT that your website and your listing are the same company, so you get credit for the reviews you already have.</small></label>
+        <label><span>Your domain</span><input type="text" name="domain" placeholder="coastalseptic.com"><small>The one you own. Leave it blank and we will register one for you.</small></label>
       </div>
-    </form>
+    </section>
 
-    <div class="done" id="done">
-      <h2>Got it.</h2>
+    <section class="card" data-step="3" hidden>
+      <h2>The one thing we cannot look up</h2>
+      <p class="help">Everything else we can find. This we cannot.</p>
+      <div class="fields">
+        <label><span>What do you promise customers that the other guys do not?</span><textarea name="differentiators" placeholder="Price quoted before we start&#10;Same crew every visit&#10;We tell you when a repair will do instead of a replacement"></textarea><small>One per line. Plain words beat polished ones. Skip it and we will ask on the call.</small></label>
+      </div>
+      <div class="note"><b>What happens next.</b> We build a real, working version of your site from what is already published about you, usually within a day or two. Then one call, about twenty minutes, to check we got it right. Do not go hunting for photos now, we start with the ones already on your site.</div>
+    </section>
+
+    <input class="hp" type="text" name="company_website" tabindex="-1" autocomplete="off" aria-hidden="true">
+
+    <div class="nav">
+      <button type="button" class="btn btn-secondary" id="back" hidden>Back</button>
+      <button type="submit" class="btn btn-primary" id="next">Next</button>
+    </div>
+    <div class="error" id="err" role="alert"></div>
+    <p class="fine" id="fine" hidden>By sending this you agree we may contact you about your website and text-back system. We never sell or share your information.</p>
+  </form>
+
+  <div class="done" id="done">
+    <div class="card">
+      <h2 class="display">Got it.</h2>
       <p>We are building your site now. You will get a text when there is something to look at, along with a time for a short call to check the details.</p>
       <p>Nothing else for you to do in the meantime.</p>
     </div>
@@ -161,53 +175,95 @@
 
 <script>
 (function () {
-  var form = document.getElementById('f');
-  var btn = document.getElementById('btn');
-  var err = document.getElementById('err');
-  var done = document.getElementById('done');
+  var form  = document.getElementById('f');
+  var steps = Array.prototype.slice.call(form.querySelectorAll('[data-step]'));
+  var back  = document.getElementById('back');
+  var next  = document.getElementById('next');
+  var err   = document.getElementById('err');
+  var fine  = document.getElementById('fine');
+  var hero  = document.getElementById('hero');
+  var count = document.getElementById('count');
+  var fill  = document.getElementById('fill');
+  var done  = document.getElementById('done');
+  var LIST  = { differentiators: 1 };
+  var at = 0;
 
-  var LIST = { differentiators: 1 };   // one per line → array
+  function labelOf(el) {
+    var s = el.parentNode.querySelector('span');
+    return s ? s.textContent.replace('*', '').trim() : el.name;
+  }
 
-  function splitList(v) { return v.split(/[\n,]/).map(function (s) { return s.trim(); }).filter(Boolean); }
+  function render() {
+    steps.forEach(function (s, i) { s.hidden = i !== at; });
+    back.hidden = at === 0;
+    hero.hidden = at !== 0;
+    fine.hidden = at !== steps.length - 1;
+    next.textContent = at === steps.length - 1 ? 'Send it over' : 'Next';
+    count.textContent = 'Step ' + (at + 1) + ' of ' + steps.length;
+    fill.style.width = ((at + 1) / steps.length * 100) + '%';
+    err.classList.remove('show');
+    var first = steps[at].querySelector('input, textarea');
+    if (first && window.matchMedia('(min-width: 700px)').matches) first.focus();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function validate() {
+    var missing = Array.prototype.filter.call(steps[at].querySelectorAll('[required]'), function (el) { return !el.value.trim(); });
+    if (missing.length) {
+      missing[0].focus();
+      err.textContent = 'Still needed: ' + missing.map(labelOf).join(', ');
+      err.classList.add('show');
+      return false;
+    }
+    var email = steps[at].querySelector('input[type=email]');
+    if (email && email.value.trim() && email.value.indexOf('@') < 1) {
+      email.focus();
+      err.textContent = 'That email address does not look right.';
+      err.classList.add('show');
+      return false;
+    }
+    return true;
+  }
 
   function collect() {
     var data = { source: 'form' };
     var fd = new FormData(form);
     fd.forEach(function (value, key) {
-      if (key === 'company_website') return;            // honeypot
+      if (key === 'company_website') return;              // honeypot
       var v = String(value).trim();
       if (!v) return;
-      if (LIST[key]) data[key] = splitList(v);
+      if (LIST[key]) data[key] = v.split(/[\n,]/).map(function (s) { return s.trim(); }).filter(Boolean);
       else data[key] = v;
     });
     if (data.domain) data.domain = data.domain.replace(/^https?:\/\//i, '').replace(/\/.*$/, '').trim();
     if (data.current_website && !/^https?:\/\//i.test(data.current_website)) data.current_website = 'https://' + data.current_website;
-    data.name = data.business_name;                     // card title in Sapt
+    data.name = data.business_name;                       // card title in Sapt
     return data;
   }
 
-  function fail(msg) {
-    err.textContent = msg; err.classList.add('show'); err.scrollIntoView({ block: 'center' });
-    btn.disabled = false; btn.textContent = 'Send it over';
-  }
+  back.addEventListener('click', function () { if (at > 0) { at--; render(); } });
 
   form.addEventListener('submit', function (e) {
     e.preventDefault();
-    err.classList.remove('show');
-    if (form.company_website.value) return;             // honeypot tripped, drop silently
-    var missing = Array.prototype.filter.call(form.querySelectorAll('[required]'), function (el) { return !el.value.trim(); });
-    if (missing.length) {
-      missing[0].focus();
-      return fail('Still needed: ' + missing.map(function (el) {
-        return el.parentNode.querySelector('span').textContent.replace('*', '').trim();
-      }).join(', '));
-    }
-
-    btn.disabled = true; btn.textContent = 'Sending';
+    if (!validate()) return;
+    if (at < steps.length - 1) { at++; return render(); }
+    if (form.company_website.value) return;               // honeypot tripped
+    next.disabled = true; next.textContent = 'Sending';
     fetch(form.dataset.endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data: collect() }) })
-      .then(function (r) { if (!r.ok) throw new Error(r.status); form.hidden = true; done.classList.add('show'); window.scrollTo({ top: 0, behavior: 'smooth' }); })
-      .catch(function () { fail('That did not send. Try again in a minute, or text us a screenshot of this page and we will take it from there.'); });
+      .then(function (r) {
+        if (!r.ok) throw new Error(r.status);
+        form.hidden = true; hero.hidden = true; done.classList.add('show');
+        count.textContent = 'Done'; fill.style.width = '100%';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      })
+      .catch(function () {
+        next.disabled = false; next.textContent = 'Send it over';
+        err.textContent = 'That did not send. Try again in a minute, or text us a screenshot of this page and we will take it from there.';
+        err.classList.add('show');
+      });
   });
+
+  render();
 })();
 </script>
 </body>
