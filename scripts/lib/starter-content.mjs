@@ -37,7 +37,26 @@ function baseItem(base, typeSlug, slug = 'default') {
   return all.find((i) => i.contentTypeSlug === typeSlug && i.slug === slug) ?? all.find((i) => i.contentTypeSlug === typeSlug)
 }
 
-const mk = (contentTypeSlug, slug, name, content, displayOrder = 0) => ({ contentTypeSlug, slug, name, content, status: 'published', displayOrder, tags: [], publishedAt: null })
+/**
+ * Sapt rejects an empty string on any field carrying a format validator: email,
+ * url, hex-color, slug. An unset field has to be absent, not blank.
+ *
+ * Found the hard way on 12 Sep 2026. A client who gave no public email, no
+ * brand colour override and no listing links failed to stamp at all, with nine
+ * format errors at once, and their whole site-settings item was lost. An empty
+ * string carries no information, so dropping it is safe: `pnpm pull` reads a
+ * missing field back as '' anyway, which still overrides the demo default.
+ */
+export function pruneEmpty(content) {
+  const out = {}
+  for (const [k, v] of Object.entries(content ?? {})) {
+    if (v === '' || v === undefined || v === null) continue
+    out[k] = v
+  }
+  return out
+}
+
+const mk = (contentTypeSlug, slug, name, content, displayOrder = 0) => ({ contentTypeSlug, slug, name, content: pruneEmpty(content), status: 'published', displayOrder, tags: [], publishedAt: null })
 
 /**
  * @param base    the base template bundle (contentTypes + starterContent from `pnpm sapt-template snapshot`)

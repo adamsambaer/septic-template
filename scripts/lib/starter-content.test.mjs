@@ -55,6 +55,19 @@ describe('clientStarterItems', () => {
     expect(copy.contactPage.officeHours).toBe('Office hours Mon-Sat 7am-6pm')
     expect(copy.nav.home).toBe('Home')
   })
+  it('drops empty strings, because Sapt rejects them on format-validated fields', () => {
+    // Regression: a client with no public email, no colour override and no
+    // listing links failed to stamp with nine format errors and lost their
+    // whole settings item.
+    const sparse = onboardingToBundle({ business_name: 'Backwater Septic', business_phone: '239-555-0144' })
+    const { items } = clientStarterItems(base, sparse)
+    const s = items.find((i) => i.contentTypeSlug === 'site-settings').content
+    expect(Object.values(s).every((v) => v !== '')).toBe(true)
+    expect(s).not.toHaveProperty('email')
+    expect(s.companyName).toBe('Backwater Septic')
+    for (const i of items) expect(Object.values(i.content).every((v) => v !== '')).toBe(true)
+  })
+
   it('gives every item the bundle item shape with unique slugs and null dates', () => {
     for (const i of items) {
       expect(i).toMatchObject({ status: 'published', tags: [], publishedAt: null })
