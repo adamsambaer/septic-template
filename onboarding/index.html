@@ -362,6 +362,7 @@
   var NEAR = 22, FAR = 35, TICK = 15;   // miles: shown, shown on request, pre-ticked
   var shardCache = {};
   var townOptions = [];                 // [{ name, county, state, miles }]
+  var homeTown = { city: '', state: '' }; // the ZIP's own town, which Sapt requires
   var townRadius = NEAR;
   var lastZip = '';
 
@@ -424,6 +425,7 @@
         townCount.textContent = '';
         return;
       }
+      homeTown = { city: here[2] || '', state: here[3] || '' };
       townRadius = NEAR;
       townOptions = data.t.map(function (t) {
         return { name: t[0], county: t[1], state: t[2], miles: haversine(here[0], here[1], t[3], t[4]), checked: false };
@@ -731,8 +733,15 @@
     if (steps.indexOf(workStep) >= 0) {
       data.cities = chosenTowns();
       data.counties = chosenCounties();
+      // Sapt requires a city and state on the site settings, and asking for
+      // them after the ZIP would be asking twice for the same fact.
+      if (homeTown.city) data.address_city = homeTown.city;
+      if (homeTown.state) data.address_state = homeTown.state;
     }
-    if (!noSite()) { delete data.services_offered; delete data.cities; delete data.counties; delete data.address_zip; }
+    if (!noSite()) {
+      delete data.services_offered; delete data.cities; delete data.counties;
+      delete data.address_zip; delete data.address_city; delete data.address_state;
+    }
     if (data.services_offered) data.emergency_24_7 = data.services_offered.indexOf('emergency') >= 0;
     data.photos_ai = photosAi.checked;
     if (uploaded.logo_url) data.logo_url = uploaded.logo_url;

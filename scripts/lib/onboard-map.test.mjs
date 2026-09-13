@@ -151,3 +151,24 @@ describe('uploaded logo and photos from the intake form', () => {
     expect(b.photos.hero).toBeUndefined()
   })
 })
+
+describe('the address Sapt insists on', () => {
+  const base = { business_name: 'Backwater Septic', business_phone: '2395550144' }
+
+  it('uses the address the ZIP gave the form', () => {
+    const b = onboardingToBundle({ ...base, address_city: 'East Lansing', address_state: 'mi', cities: ['Haslett'] })
+    expect(b.settings.addressCity).toBe('East Lansing')
+    expect(b.settings.addressState).toBe('MI')
+  })
+
+  it('falls back to the first town they serve, and says so', () => {
+    const b = onboardingToBundle({ ...base, address_state: 'FL', cities: ['Naples (Collier County)', 'Bonita Springs'] })
+    expect(b.settings.addressCity).toBe('Naples')
+    expect(b.notes.some((n) => n.includes('first town they serve'))).toBe(true)
+  })
+
+  it('leaves it blank when there is nothing to go on, so the preflight can stop', () => {
+    const b = onboardingToBundle(base)
+    expect(b.settings.addressCity).toBe('')
+  })
+})

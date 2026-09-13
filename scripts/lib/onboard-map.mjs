@@ -84,6 +84,17 @@ export function onboardingToBundle(data) {
     `${name} pumps, repairs and replaces septic systems across ${areaPhrase}. Small enough that the person who answers the phone is the person who shows up at your property.`
   const differentiators = list(d.differentiators)
 
+  // Sapt's site-settings type requires a city and a state. The form derives
+  // both from the ZIP, and `pnpm draft` reads them off an existing site, but a
+  // sparse record still turns up: fall back to the first town they serve rather
+  // than let the whole settings item be rejected and the site launch with none.
+  const cityNamesRaw = list(d.cities)
+  const firstTown = (cityNamesRaw[0] ?? '').replace(/\s*\(.+\)$/, '').trim()
+  const addressCity = str(d.address_city) || firstTown
+  if (!str(d.address_city) && firstTown) {
+    notes.push(`no address city given; using ${firstTown}, the first town they serve. Confirm it on the call.`)
+  }
+
   const settings = {
     ...t,
     companyName: name,
@@ -92,7 +103,7 @@ export function onboardingToBundle(data) {
     phoneE164: phone.e164,
     email: str(d.email_public),
     addressStreet: str(d.address_street),
-    addressCity: str(d.address_city),
+    addressCity,
     addressState: state,
     addressZip: str(d.address_zip),
     siteUrl: domain ? `https://${domain}` : '',
@@ -172,7 +183,7 @@ export function onboardingToBundle(data) {
   if (offered.has('emergency') !== emergency) notes.push('emergency service ticked but 24/7 not (or vice versa); check which is true')
 
   // ── Cities: county assignment when more than one county ──
-  const cityNames = list(d.cities)
+  const cityNames = cityNamesRaw
   const cities = cityNames.map((c, i) => {
     const m = c.match(/^(.+?)\s*\((.+)\)$/) // "Davie (Broward County)" form
     const cityName = m ? m[1].trim() : c

@@ -29,6 +29,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { mapCms } from './lib/cms-map.mjs'
 import { onboardingToBundle } from './lib/onboard-map.mjs'
+import { fillAddressFromZip } from './lib/zip-lookup.mjs'
 import { needsRebind, rebindActions } from './lib/rebind.mjs'
 import { clientStarterItems } from './lib/starter-content.mjs'
 
@@ -204,8 +205,27 @@ async function main() {
   if (record.typeSlug && record.typeSlug !== 'client_onboarding') throw new Error(`record ${record.id} is a ${record.typeSlug}, not client_onboarding`)
 
   // 2. bundle + snapshot
-  const bundle = onboardingToBundle(record.data)
+  const fromZip = fillAddressFromZip(record.data)
+  if (fromZip.note) console.log(`  address   ${fromZip.note}`)
+  const bundle = onboardingToBundle(fromZip.data)
   if (!bundle.slug) throw new Error('record has no business_name')
+
+  // Sapt rejects a settings item that is missing a required field, and it
+  // rejects it silently enough that the project gets created with no settings
+  // at all. A clear stop here beats a half-built project nobody notices.
+  const REQUIRED = {
+    companyName: 'business name',
+    phoneNumber: 'business phone',
+    addressCity: 'city (from their ZIP, their website, or the first town they serve)',
+    addressState: 'state (two letters)',
+  }
+  const missing = Object.entries(REQUIRED).filter(([k]) => !String(bundle.settings[k] ?? '').trim())
+  if (missing.length) {
+    console.error(`\nonboard: record ${record.id ?? ''} cannot build a site yet. Missing:`)
+    for (const [k, why] of missing) console.error(`  ${k.padEnd(13)} ${why}`)
+    console.error('\nFill these on the record in Sapt, or re-run after `pnpm draft <their site>`, then try again.')
+    process.exit(1)
+  }
   const { config, notes } = mapCms({ ...bundle, assetBaseUrl: 'https://assets.sapt.ai' })
 
   // 3. write outputs
@@ -234,6 +254,16 @@ async function main() {
   // 4. optional: the client's Sapt project
   let projectId = record.data?.sapt_project_id || ''
   if (createProject) {
+    // The id stamped on the record is a claim, not a fact: a project can be
+    // deleted after a failed run, and trusting the stamp then skips the create
+    // and leaves the client with no project at all.
+    if (projectId) {
+      const live = await api(`/projects/${projectId}`).then(() => true).catch(() => false)
+      if (!live) {
+        console.log(`  project   ${projectId} on the record is gone; creating a fresh one`)
+        projectId = ''
+      }
+    }
     if (projectId) {
       console.log(`  project   already exists: ${projectId} (skipping create)`)
     } else {
