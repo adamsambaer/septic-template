@@ -24,7 +24,10 @@
     "deploy:prod": "pnpm run deploy",
     "shot": "node scripts/shot.mjs",
     "ensure": "node scripts/ensure-generated.mjs",
-    "predev": "node scripts/ensure-generated.mjs"
+    "predev": "node scripts/ensure-generated.mjs",
+    "intake": "node scripts/build-intake.mjs",
+    "e2e": "node scripts/e2e-intake.mjs",
+    "zip-data": "node scripts/build-zip-data.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",

@@ -8,6 +8,7 @@
 <link rel="icon" href="assets/icon.png" type="image/png" sizes="256x256">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<script src="lib/logo.js"></script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Outfit:wght@600;700;800&display=swap">
 <style>
   /* Lifted from airacquisition.com so this page is the same product as the
@@ -76,6 +77,19 @@
   .picked li span { flex: 0 0 auto; color: var(--muted); font-size: 12.5px; white-space: nowrap; }
   .ok { color: var(--green); font-weight: 600; }
   .bad { color: var(--red); font-weight: 600; }
+
+  /* brand colour */
+  .swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+  .swatch { width: 38px; height: 38px; border-radius: 10px; border: 2px solid transparent; box-shadow: 0 0 0 1px var(--line) inset; cursor: pointer; padding: 0; position: relative; }
+  .swatch[aria-pressed="true"] { border-color: var(--ink); }
+  .swatch[aria-pressed="true"]::after { content: ""; position: absolute; inset: 0; border-radius: 8px; box-shadow: 0 0 0 2px #fff inset; }
+  .swatch.fromlogo::before { content: "from your logo"; position: absolute; left: 50%; bottom: -19px; transform: translateX(-50%); font-size: 10.5px; color: var(--muted); white-space: nowrap; }
+  .colorrow { display: flex; align-items: center; gap: 12px; margin-top: 26px; flex-wrap: wrap; }
+  .pickcolor { display: inline-flex; align-items: center; gap: 8px; border: 1.5px solid var(--line); border-radius: 999px; padding: 6px 14px 6px 8px; cursor: pointer; font: 500 13.5px/1 var(--sans); }
+  .pickcolor:hover { border-color: var(--ink-3); }
+  .pickcolor input[type=color] { width: 26px; height: 26px; padding: 0; border: 0; background: none; cursor: pointer; }
+  .brandchip { display: inline-flex; align-items: center; border-radius: 999px; padding: .6rem 1.1rem; font: 600 12.5px/1 var(--sans); letter-spacing: .04em; text-transform: uppercase; color: #fff; background: var(--ink); }
+  .logonote { margin-top: 10px; font-size: 13px; line-height: 1.5; color: var(--green); }
 
   /* town picker */
   .towns { display: grid; gap: 6px; max-height: 340px; overflow-y: auto; padding: 2px; }
@@ -217,6 +231,20 @@
             <small>We will use generated imagery so the site does not launch empty, and swap in real photos of your trucks and crews as soon as you text them to us. Real photos always win, this is just so you are not waiting.</small>
           </span>
         </label>
+
+        <div>
+          <span style="display:block;margin-bottom:7px;font:500 14.5px/1.3 var(--sans);color:var(--ink-2)">Your brand colour</span>
+          <div class="swatches" id="swatches"></div>
+          <div class="colorrow">
+            <label class="pickcolor">
+              <input type="color" id="brandColor" value="#E8631A">
+              <span>Pick another</span>
+            </label>
+            <span class="brandchip" id="brandChip">Call now</span>
+          </div>
+          <input type="hidden" name="brand_primary_color" id="brandHidden" value="">
+          <small class="hint" id="brandNote">Buttons, links and highlights use this. Leave it and we will use the one from your logo, or ask on the call.</small>
+        </div>
       </div>
       <div class="note" id="mediaNote" hidden><b>Why we are asking.</b> Without a website we have nothing to start from, and a site with no logo would go out wearing someone else's. Your logo is the one thing we genuinely cannot find for you.</div>
     </section>
@@ -328,7 +356,7 @@
   var LIST  = { differentiators: 1 };
   var GROUP = { services_offered: 1 };
   var MAX_PHOTOS = 9;
-  var uploaded = { logo_url: '', photo_urls: [] };   // filled once the files are in Sapt
+  var uploaded = { logo_url: '', photo_urls: [], logo_knockout: true };   // filled once the files are in Sapt
   var at = 0;
   // The step only advances once the uploads settle, which is a promise turn
   // later. Without this a double-tap on Next -- normal on a phone -- queues two
@@ -479,6 +507,7 @@
   // it happens while they answer the rest of the questions instead of making
   // them watch a spinner at the end.
 
+  var root = window;
   var MAX_EDGE = { photo: 2000, logo: 1200 };
   var JPEG_Q = 0.82;
   var logoJob = null;     // { name, bytes, status, url }
@@ -486,6 +515,80 @@
 
   /** Canvas can only decode these. HEIC and SVG go up untouched. */
   function decodable(f) { return /^image\/(png|jpe?g|webp)$/i.test(f.type || ''); }
+
+  /**
+   * Turn whatever they picked into a lockup the header can use.
+   *
+   * Measures the picture, erases a plain white or black ground, crops away the
+   * padding, and flips a white-on-transparent mark to black so a single rule
+   * ("knock it out on dark surfaces") is correct for every logo we accept. A
+   * multi-coloured mark is left exactly as it is and flagged so nothing filters
+   * it later, because a silhouette of a colourful logo is not that logo.
+   *
+   * @returns {Promise<{ file: File, ink: string, brand: string, keyed: boolean, cropped: boolean }>}
+   */
+  function prepareLogo(file) {
+    var plain = { file: file, ink: 'mixed', brand: '', keyed: false, cropped: false };
+    if (!decodable(file) || typeof createImageBitmap !== 'function' || !root.AirLogo) return Promise.resolve(plain);
+    return createImageBitmap(file, { imageOrientation: 'from-image' }).then(function (bmp) {
+      var c = document.createElement('canvas');
+      c.width = bmp.width; c.height = bmp.height;
+      var g = c.getContext('2d', { willReadFrequently: true });
+      g.drawImage(bmp, 0, 0);
+      bmp.close();
+
+      var data;
+      try { data = g.getImageData(0, 0, c.width, c.height) } catch (e) { return plain }
+      var a = root.AirLogo.analyse(data);
+      var keyed = root.AirLogo.keyOut(data);
+      if (keyed) g.putImageData(data, 0, 0);
+
+      // A light mark becomes a dark one. Same shape, and now the one knockout
+      // rule the site has is right for it.
+      if (a.ink === 'light') {
+        g.globalCompositeOperation = 'source-in';
+        g.fillStyle = '#141414';
+        g.fillRect(0, 0, c.width, c.height);
+        g.globalCompositeOperation = 'source-over';
+      }
+
+      // Crop to the mark with a small margin, unless it already fills the frame.
+      var t = a.trim, out = c, cropped = false;
+      if (t && (t.w < c.width * 0.92 || t.h < c.height * 0.92)) {
+        var pad = Math.round(Math.max(t.w, t.h) * 0.04);
+        var x = Math.max(0, t.x - pad), y = Math.max(0, t.y - pad);
+        var w = Math.min(c.width - x, t.w + pad * 2), h = Math.min(c.height - y, t.h + pad * 2);
+        var c2 = document.createElement('canvas');
+        c2.width = w; c2.height = h;
+        c2.getContext('2d').drawImage(c, x, y, w, h, 0, 0, w, h);
+        out = c2; cropped = true;
+      }
+
+      // Down to a sensible size for a header lockup.
+      var scale = Math.min(1, MAX_EDGE.logo / Math.max(out.width, out.height));
+      if (scale < 1) {
+        var c3 = document.createElement('canvas');
+        c3.width = Math.max(1, Math.round(out.width * scale));
+        c3.height = Math.max(1, Math.round(out.height * scale));
+        c3.getContext('2d').drawImage(out, 0, 0, c3.width, c3.height);
+        out = c3;
+      }
+
+      return new Promise(function (res) {
+        out.toBlob(function (blob) {
+          if (!blob) return res(plain);
+          var name = file.name.replace(/\.[^.]+$/, '') + '-lockup.png';
+          res({
+            file: new File([blob], name, { type: 'image/png' }),
+            ink: a.ink === 'light' ? 'dark' : a.ink,   // we just made it dark
+            brand: a.brand,
+            keyed: keyed,
+            cropped: cropped,
+          });
+        }, 'image/png');
+      });
+    }).catch(function () { return plain });
+  }
 
   function shrink(file, maxEdge, keepAlpha) {
     if (!decodable(file) || typeof createImageBitmap !== 'function') return Promise.resolve(file);
@@ -532,7 +635,7 @@
    * separate requests meant nine sets of them, so the files go together and the
    * jobs exist from the first moment, which is what lets Next know to wait.
    */
-  function startBatch(files, feature, maxEdge, keepAlpha, jobs, list) {
+  function startBatch(files, feature, prep, jobs, list) {
     var mine = Array.prototype.map.call(files, function (f) {
       var job = { name: f.name, bytes: f.size, status: 'shrinking', url: '' };
       jobs.push(job);
@@ -541,7 +644,7 @@
     drawList(list, jobs);
 
     var done = Promise.all(mine.map(function (m) {
-      return shrink(m.file, maxEdge, keepAlpha).then(function (small) {
+      return prep(m.file).then(function (small) {
         m.small = small;
         m.job.bytes = small.size;
         m.job.status = 'sending';
@@ -601,11 +704,19 @@
     logoList.innerHTML = '';
     err.classList.remove('show');
     if (!logoFile.files.length) return;
-    var batch = startBatch([logoFile.files[0]], 'branding', MAX_EDGE.logo, true, [], logoList);
+    var report = null;
+    var batch = startBatch([logoFile.files[0]], 'branding', function (f) {
+      return prepareLogo(f).then(function (r) { report = r; return r.file });
+    }, [], logoList);
     logoJob = batch.jobs[0];
     batch.p.then(function (done) {
-      if (done[0].status === 'done') uploaded.logo_url = done[0].url;
-      else fail(batch.reason() || 'Your logo did not send. Check your signal and pick it again.');
+      if (done[0].status !== 'done') {
+        return fail(batch.reason() || 'Your logo did not send. Check your signal and pick it again.');
+      }
+      uploaded.logo_url = done[0].url;
+      uploaded.logo_knockout = !report || report.ink !== 'mixed';
+      describeLogo(report);
+      if (report && report.brand) suggestBrand(report.brand);
     });
   });
 
@@ -621,7 +732,9 @@
       return;
     }
     photosAi.checked = false;
-    var batch = startBatch(photoFiles.files, 'cms', MAX_EDGE.photo, false, photoJobs, photoList);
+    var batch = startBatch(photoFiles.files, 'cms', function (f) {
+      return shrink(f, MAX_EDGE.photo, false);
+    }, photoJobs, photoList);
     batch.p.then(function (done) {
       uploaded.photo_urls = done.filter(function (j) { return j.status === 'done' }).map(function (j) { return j.url });
       var bad = done.filter(function (j) { return j.status === 'failed' }).length;
@@ -633,6 +746,84 @@
     if (!photosAi.checked) return;
     photoFiles.value = ''; photoList.innerHTML = ''; photoJobs = []; uploaded.photo_urls = [];
   });
+
+  // ── Brand colour ──────────────────────────────────────────────────────
+  // Every site was the template's orange because nothing ever asked. The logo
+  // usually answers it: if there is one strong colour in the mark, that is the
+  // colour. Otherwise a short row of the ones contractors actually use, and a
+  // picker for anything else. Nothing is preselected, so silence means "we did
+  // not choose" rather than a wrong colour nobody spotted.
+
+  var swatches   = document.getElementById('swatches');
+  var brandColor = document.getElementById('brandColor');
+  var brandChip  = document.getElementById('brandChip');
+  var brandHidden = document.getElementById('brandHidden');
+  var brandNote  = document.getElementById('brandNote');
+  var logoNote   = null;
+
+  var PRESETS = [
+    { hex: '#1F6FB2', name: 'Blue' },
+    { hex: '#1C6B48', name: 'Green' },
+    { hex: '#C4392C', name: 'Red' },
+    { hex: '#E8631A', name: 'Orange' },
+    { hex: '#3A3A3A', name: 'Charcoal' },
+    { hex: '#7A4AC8', name: 'Purple' },
+  ];
+  var fromLogo = '';
+
+  function drawSwatches() {
+    swatches.innerHTML = '';
+    var list = (fromLogo ? [{ hex: fromLogo, name: 'From your logo', logo: true }] : []).concat(PRESETS);
+    list.forEach(function (p) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'swatch' + (p.logo ? ' fromlogo' : '');
+      b.style.background = p.hex;
+      b.title = p.name + ' ' + p.hex;
+      b.setAttribute('aria-label', p.name + ' ' + p.hex);
+      b.setAttribute('aria-pressed', String(brandHidden.value.toUpperCase() === p.hex.toUpperCase()));
+      b.addEventListener('click', function () { setBrand(p.hex, p.logo ? 'from your logo' : '') });
+      swatches.appendChild(b);
+    });
+  }
+
+  function setBrand(hexValue, why) {
+    var v = String(hexValue || '').trim().toUpperCase();
+    if (!/^#[0-9A-F]{6}$/.test(v)) return;
+    brandHidden.value = v;
+    brandColor.value = v;
+    brandChip.style.background = v;
+    brandNote.textContent = why
+      ? 'We pulled this straight out of your logo. Tap another if it is wrong.'
+      : 'Buttons, links and highlights use this colour.';
+    drawSwatches();
+  }
+
+  function suggestBrand(hexValue) {
+    fromLogo = String(hexValue || '').toUpperCase();
+    if (!/^#[0-9A-F]{6}$/.test(fromLogo)) { fromLogo = ''; return drawSwatches() }
+    if (!brandHidden.value) setBrand(fromLogo, 'logo');
+    else drawSwatches();
+  }
+
+  /** Tell them what we did to their picture, so a changed logo is not a surprise. */
+  function describeLogo(report) {
+    if (!logoNote) {
+      logoNote = document.createElement('p');
+      logoNote.className = 'logonote';
+      logoList.parentNode.appendChild(logoNote);
+    }
+    var did = [];
+    if (report && report.keyed) did.push('took the white background off');
+    if (report && report.cropped) did.push('cropped the empty space around it');
+    logoNote.textContent = did.length
+      ? 'Got it. We ' + did.join(' and ') + ' so it sits properly in your header.'
+      : 'Got it.';
+  }
+
+  brandColor.addEventListener('input', function () { setBrand(brandColor.value, '') });
+  drawSwatches();
+  brandChip.style.background = '#121212';
 
   /** Step 3 reads differently depending on whether step 1 gave us a site. */
   function tuneMediaStep() {
@@ -744,7 +935,12 @@
     }
     if (data.services_offered) data.emergency_24_7 = data.services_offered.indexOf('emergency') >= 0;
     data.photos_ai = photosAi.checked;
-    if (uploaded.logo_url) data.logo_url = uploaded.logo_url;
+    if (uploaded.logo_url) {
+      data.logo_url = uploaded.logo_url;
+      // Whether the dark surfaces may render it as a white silhouette. False
+      // for a multi-coloured mark, where a silhouette is not the logo.
+      data.logo_knockout = uploaded.logo_knockout;
+    }
     if (uploaded.photo_urls.length) data.photo_urls = uploaded.photo_urls;
     if (data.domain) data.domain = data.domain.replace(/^https?:\/\//i, '').replace(/\/.*$/, '').trim();
     if (data.current_website && !/^https?:\/\//i.test(data.current_website)) data.current_website = 'https://' + data.current_website;

@@ -7,6 +7,7 @@
 //
 // usage: node scripts/shot.mjs <url> <out.png> [--width N] [--height N] [--mobile]
 //        [--scroll "css"] [--hover "css"] [--click "css"] [--full] [--wait ms]
+//        [--eval "js"] [--eval-file path.js]  (an --eval may return a promise)
 import { spawn } from 'node:child_process'
 import fs from 'node:fs'
 import os from 'node:os'
@@ -30,6 +31,9 @@ if (opt.mobile) {
   if (!rest.includes('--width')) opt.width = 390
   if (!rest.includes('--height')) opt.height = 844
 }
+// A long script cannot go on the command line: an inlined image is tens of
+// kilobytes and the shell refuses the argument.
+if (opt['eval-file']) opt.eval = fs.readFileSync(opt['eval-file'], 'utf8')
 
 const chrome = ['C:/Program Files/Google/Chrome/Application/chrome.exe', 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe'].find((p) => fs.existsSync(p))
 const port = 9222 + Math.floor(Math.random() * 1000)

@@ -37,12 +37,13 @@ for (const m of page.matchAll(/(?:src|href)="\/(?!\/)/g)) {
 
 fs.writeFileSync(path.join(OUT, 'index.html'), page)
 copyDir(path.join(SRC, 'assets'), path.join(OUT, 'assets'))
-function copyDir(from, to) {
+copyDir(path.join(SRC, 'lib'), path.join(OUT, 'lib'), (name) => !name.endsWith('.test.mjs'))
+function copyDir(from, to, keep = () => true) {
   fs.mkdirSync(to, { recursive: true })
   for (const e of fs.readdirSync(from, { withFileTypes: true })) {
     const a = path.join(from, e.name), b = path.join(to, e.name)
-    if (e.isDirectory()) copyDir(a, b)
-    else fs.copyFileSync(a, b)
+    if (e.isDirectory()) copyDir(a, b, keep)
+    else if (keep(e.name)) fs.copyFileSync(a, b)
   }
 }
 // Nothing here should ever be indexed; the form is for people we send it to.
@@ -53,4 +54,6 @@ const towns = path.join(OUT, 'assets', 'towns')
 if (!fs.existsSync(towns) || fs.readdirSync(towns).length < 50) {
   throw new Error('assets/towns is missing or thin; run scripts/build-zip-data.mjs first')
 }
-console.log(`  staged    onboarding/dist (${fs.readdirSync(towns).length} town shards)`)
+const shardCount = fs.readdirSync(towns).filter((f) => f.endsWith('.json')).length
+if (!fs.existsSync(path.join(OUT, 'lib', 'logo.js'))) throw new Error('lib/logo.js did not ship; the logo would go up untouched')
+console.log(`  staged    onboarding/dist (${shardCount} town shards)`)

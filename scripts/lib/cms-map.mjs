@@ -185,7 +185,11 @@ export function mapCms(input) {
   // One uploaded file in both slots means we have no real light lockup. Say so,
   // and the dark surfaces knock it out to white rather than showing a dark mark
   // on a dark header.
-  photos.logoLightKnockout = Boolean(logo) && logo === logoLight
+  // The intake form measures the uploaded picture and knows the answer. Only
+  // when nothing told us do we guess from "both slots hold the same file".
+  photos.logoLightKnockout = typeof input.logoKnockout === 'boolean'
+    ? input.logoKnockout && Boolean(logo)
+    : Boolean(logo) && logo === logoLight
   if (!logo || !logoLight) {
     notes.push('no logo on Branding or in Photos: the site sets the company name in type. Upload one to replace it.')
   }

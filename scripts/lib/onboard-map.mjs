@@ -219,6 +219,11 @@ export function onboardingToBundle(data) {
 
   return {
     slug: slugify(name),
+    // Whether the dark surfaces may render the logo as a white silhouette. The
+    // intake form measures the picture and says; a record without the field
+    // (an older one, or one built by hand) leaves it undefined and mapCms falls
+    // back to its own guess.
+    logoKnockout: typeof d.logo_knockout === 'boolean' ? d.logo_knockout : undefined,
     settings, photos, copy, services, cities, faqs, steps, reviews, branding,
     ownerMobile: normalisePhone(d.owner_phone).e164,
     notes,

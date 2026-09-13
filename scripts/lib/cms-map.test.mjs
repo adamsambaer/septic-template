@@ -121,3 +121,22 @@ describe('single uploaded logo on dark surfaces', () => {
     expect(config.photos.logoLightKnockout).toBe(false)
   })
 })
+
+describe('what the intake form measured beats the guess', () => {
+  const one = { kind: 'url', url: 'https://assets.sapt.ai/p/branding/x/mark.png' }
+
+  it('does not silhouette a multi-coloured mark, even though both slots match', () => {
+    const { config } = mapCms({ photos: { logo: one, logoLight: one }, logoKnockout: false, assetBaseUrl: 'https://assets.sapt.ai' })
+    expect(config.photos.logoLightKnockout).toBe(false)
+  })
+
+  it('still knocks out a single-tone one', () => {
+    const { config } = mapCms({ photos: { logo: one, logoLight: one }, logoKnockout: true, assetBaseUrl: 'https://assets.sapt.ai' })
+    expect(config.photos.logoLightKnockout).toBe(true)
+  })
+
+  it('never knocks out nothing', () => {
+    const { config } = mapCms({ photos: {}, logoKnockout: true, assetBaseUrl: 'https://assets.sapt.ai' })
+    expect(config.photos.logoLightKnockout).toBe(false)
+  })
+})
