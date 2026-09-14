@@ -1,0 +1,23 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "airacq-auto-onboard",
+  "main": "src/index.js",
+  "compatibility_date": "2026-08-01",
+  // global_fetch_strictly_public sends subrequests out to the public internet
+  // instead of looping back inside the account, which is the only way this
+  // worker can honestly check whether a client's site is answering.
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "observability": { "enabled": true },
+  // Every two minutes. A client who has just signed up should not wait, and a
+  // sweep that finds nothing costs nothing.
+  "triggers": { "crons": ["*/2 * * * *"] },
+  "vars": {
+    "SAPT_AGENCY_PROJECT_ID": "e07c4bff-37e8-46e3-96eb-f1c0c13b095c",
+    "SAPT_TEMPLATE_ID": "c6fb4251-f834-47fd-a148-74c3b409f96f",
+    // Where a client site lands until their own domain is pointed at it.
+    "SITE_HOST_SUFFIX": ".adamsambaer.workers.dev"
+  }
+  // Secrets, never vars:
+  //   npx wrangler secret put SAPT_API_KEY
+  //   npx wrangler secret put DASH_PASSWORD
+}
