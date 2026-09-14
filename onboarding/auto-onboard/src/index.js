@@ -322,7 +322,7 @@ function authed(request, env) {
   return diff === 0
 }
 
-export default {
+const worker = {
   async scheduled(event, env, ctx) {
     ctx.waitUntil(sweep(env).then((d) => {
       for (const x of d) console.log(x.ok ? `built ${x.name} → ${x.projectId} (${x.entities} entities)` : `skipped ${x.name}: ${x.reason}`)
@@ -345,3 +345,5 @@ export default {
     return new Response(await board(env), { headers: { 'Content-Type': 'text/html; charset=utf-8' } })
   },
 }
+
+export default worker
