@@ -1,0 +1,83 @@
+# Builds and deploys the website for any client who does not have one yet.
+#
+# The auto-onboard Worker creates each client's Sapt project within a couple of
+# minutes of them signing up, but it cannot build their website: that needs a
+# Next.js build. This is the other half. It runs on a schedule so nobody has to
+# remember it, and Sapt can fire it the moment a project is created.
+#
+# Set once, in this repo's Settings → Secrets and variables → Actions:
+#   SAPT_API_KEY           a Sapt key with live permissions
+#   CLOUDFLARE_API_TOKEN   Cloudflare → My Profile → API Tokens → Edit
+#                          Cloudflare Workers. This is the only one you have
+#                          to create by hand.
+#   CLOUDFLARE_ACCOUNT_ID  374bb52b24b7075ac95054663352ea29
+#
+# To fire it from Sapt instead of waiting: POST to
+# https://api.github.com/repos/adamsambaer/septic-template/dispatches with
+# {"event_type":"build-sites"} and a GitHub token.
+name: Build client sites
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Rebuild even for clients whose site already answers'
+        type: boolean
+        default: false
+  repository_dispatch:
+    types: [build-sites]
+
+# Two runs deploying different clients at once would fight over the generated
+# snapshot, which is a single file in the working tree.
+concurrency:
+  group: build-client-sites
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Check the secrets are there
+        env:
+          SAPT_API_KEY: ${{ secrets.SAPT_API_KEY }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          missing=""
+          [ -n "$SAPT_API_KEY" ] || missing="$missing SAPT_API_KEY"
+          [ -n "$CLOUDFLARE_API_TOKEN" ] || missing="$missing CLOUDFLARE_API_TOKEN"
+          [ -n "$CLOUDFLARE_ACCOUNT_ID" ] || missing="$missing CLOUDFLARE_ACCOUNT_ID"
+          if [ -n "$missing" ]; then
+            echo "Missing repo secrets:$missing"
+            echo "Add them under Settings, Secrets and variables, Actions."
+            exit 1
+          fi
+
+      - name: Build and deploy anything pending
+        env:
+          SAPT_API_KEY: ${{ secrets.SAPT_API_KEY }}
+          SAPT_AGENCY_PROJECT_ID: e07c4bff-37e8-46e3-96eb-f1c0c13b095c
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          SITE_HOST_SUFFIX: .adamsambaer.workers.dev
+        run: node scripts/build-pending.mjs ${{ (inputs.force && '--force') || '' }}
+
+      - name: Leave nothing behind
+        if: always()
+        run: git checkout -- src/config/site-config.generated.json || true

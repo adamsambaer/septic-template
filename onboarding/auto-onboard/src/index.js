@@ -247,7 +247,7 @@ async function board(env) {
       </header>
       <p class="meta">${esc(d.business_phone || 'no phone')} · ${esc(d.address_city || '?')}, ${esc(d.address_state || '?')} · in ${when}</p>
       <div class="facts">
-        <div><span>Sapt project</span>${project ? `<b class="ok">${esc(project.name)}</b>` : pid ? '<b class="bad">stale id</b>' : '<b class="bad">not built</b>'}</div>
+        <div><span>Sapt project</span>${project ? `<b class="ok"><a href="https://app.sapt.ai/projects/${esc(pid)}" target="_blank" rel="noopener">${esc(project.name)}</a></b>` : pid ? '<b class="bad">stale id</b>' : '<b class="bad">not built</b>'}</div>
         <div><span>Website</span>${siteCode === 200 ? `<b class="ok"><a href="${esc(url)}" target="_blank" rel="noopener">live</a></b>` : url ? '<b class="bad">down</b>' : '<b class="bad">not built</b>'}</div>
         <div><span>Services</span><b>${(d.services_offered ?? []).length || '—'}</b></div>
         <div><span>Towns</span><b>${(d.cities ?? []).length || '—'}</b></div>
@@ -290,7 +290,7 @@ form{margin-top:30px}button{font:500 .92rem var(--sans);background:var(--ink);co
 .empty{background:var(--card);border:1px dashed var(--rule);border-radius:12px;padding:30px;text-align:center;color:var(--muted)}
 </style></head><body><div class="wrap">
 <h1>Clients</h1>
-<p class="sub">Every intake record, whether its Sapt project exists, and whether its website answers. Checked live, just now.</p>
+<p class="sub">Every intake record, whether its Sapt project exists, and whether its website answers. Checked live, just now. Projects build themselves within two minutes of a signup; websites build on the quarter hour.</p>
 <div class="tally">
   <div><span>Signed up</span><b>${rows.length}</b></div>
   <div><span>Project built</span><b>${built}</b></div>

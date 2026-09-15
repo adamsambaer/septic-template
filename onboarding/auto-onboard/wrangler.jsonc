@@ -8,6 +8,9 @@
   // worker can honestly check whether a client's site is answering.
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "observability": { "enabled": true },
+  // A board nobody can find is a board nobody uses. custom_domain makes
+  // Cloudflare create the DNS record and the certificate itself.
+  "routes": [{ "pattern": "clients.airacquisition.com", "custom_domain": true }],
   // Every two minutes. A client who has just signed up should not wait, and a
   // sweep that finds nothing costs nothing.
   "triggers": { "crons": ["*/2 * * * *"] },
